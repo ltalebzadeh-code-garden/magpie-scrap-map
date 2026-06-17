@@ -5,6 +5,7 @@
 ```
 magpie/
 ├── frontend/               # SvelteKit frontend application
+├── supabase/               # Database schema and migrations
 ├── .git/                   # Git repository
 ├── PROJECT.md              # Project overview and requirements
 ├── FLOWS.md                # Product flows and user journeys
@@ -13,6 +14,18 @@ magpie/
 ├── CHANGELOG.md            # Version history and changes
 ├── PROJECT_STRUCTURE.md    # This file
 └── README.md               # Project root README
+```
+
+## Supabase Structure
+
+```
+supabase/
+├── migrations/
+│   ├── 20260616000001_initial_schema.sql       # Core resources table with PostGIS
+│   └── 20260616000002_nearby_search_function.sql # Geospatial search function
+├── seed.sql                                     # Sample data for development
+├── README.md                                    # Schema documentation and reference
+└── QUICKSTART.md                                # 10-minute setup guide
 ```
 
 ## Frontend Structure
@@ -68,6 +81,13 @@ frontend/
 
 ## Key Files
 
+### Database Schema
+- `supabase/migrations/20260616000001_initial_schema.sql` - Resources table, triggers, indexes, RLS
+- `supabase/migrations/20260616000002_nearby_search_function.sql` - Geospatial search
+- `supabase/seed.sql` - Sample test data (25+ resources)
+- `supabase/README.md` - Complete schema reference and documentation
+- `supabase/QUICKSTART.md` - Backend setup guide
+
 ### Configuration
 - `frontend/package.json` - Dependencies, scripts, project metadata
 - `frontend/tsconfig.json` - TypeScript compiler options
@@ -107,38 +127,9 @@ frontend/
 - App shell components
 - Online/offline detection
 - Placeholder pages
+- Complete database schema with PostGIS
+- Spatial indexes and search functions
+- Row Level Security policies
+- Sample seed data
+- Backend documentation
 
-### 🚧 Next Steps
-- Supabase client setup
-- Database schema
-- Backend connection
-- Map integration (Leaflet)
-- Data fetching and caching
-
-## Build Outputs
-
-- `frontend/.svelte-kit/` - Development build artifacts
-- `frontend/build/` - Production build output (generated on `npm run build`)
-
-## Ignored Files
-
-Files excluded from version control:
-- `node_modules/`
-- `.svelte-kit/`
-- `build/`
-- `.env`
-- `*.log`
-- `.DS_Store`
-
-## Scripts
-
-Available npm commands in `frontend/`:
-- `npm run dev` - Start development server
-- `npm run build` - Create production build
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
-- `npm run format` - Format with Prettier
-- `npm run format:check` - Check formatting
-- `npm run check` - TypeScript type checking
-- `npm run check:watch` - Watch mode type checking

@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-16)
+- Complete Supabase database schema with PostGIS extension
+- Initial migration: `resources` table with full constraints and validation
+- PostGIS geography column with automatic triggers for spatial queries
+- Nearby search function (`search_nearby_resources`) with radius and filters
+- GIST spatial index for fast geospatial queries
+- B-tree indexes on status, category, timestamps for filtering
+- Row Level Security policies (public read, public insert, device-based update)
+- Automatic `updated_at` trigger on resource updates
+- Automatic `location` geography computation from latitude/longitude
+- Sample seed data with 25+ realistic Tehran-area resources
+- Comprehensive `supabase/README.md` with schema documentation
+- Quick-start guide (`supabase/QUICKSTART.md`) for 10-minute setup
+- Database constraints: text lengths, enum values, coordinate ranges
+- Support for resource expiration with `expires_at` timestamp
+- Device-based ownership tracking via `device_id_hash` (SHA-256)
+
 ### Added (2026-06-15)
 - Initial SvelteKit frontend project setup
 - TypeScript configuration and type definitions
@@ -24,12 +41,14 @@ All notable changes to this project will be documented in this file.
 - npm v11.12.1
 - SvelteKit v2.63.0
 - TypeScript v6.0.3
+- PostgreSQL with PostGIS (via Supabase)
+- Database migrations in `supabase/migrations/`
 
 ## Roadmap
 
 ### Day 2-3: Backend Connection
 - Supabase client integration
-- Database schema and policies
+- ✅ Database schema and policies (completed Day 1)
 - Typed data access functions
 - Test frontend-backend connection
 
@@ -37,7 +56,7 @@ All notable changes to this project will be documented in this file.
 - Leaflet integration
 - Marker rendering
 - Geolocation support
-- PostGIS nearby search
+- ✅ PostGIS nearby search function (completed Day 1)
 
 ### Day 6: List View
 - Text-first resource browsing

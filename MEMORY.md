@@ -55,6 +55,43 @@
   - Feature status checklist
   - MVP timeline reference
 
+### Day 1 - Backend Setup (June 16, 2026)
+
+#### Created Supabase Schema and Migrations
+- Created `supabase/migrations/` directory structure
+- Built initial schema migration with full `resources` table
+- Added PostGIS geography column with automatic triggers
+- Created nearby search function using PostGIS spatial queries
+- Defined all constraints, indexes, and RLS policies for MVP
+
+#### Database Schema Features
+- **Core Table**: `resources` with UUID primary key
+- **Validation**: CHECK constraints on all text fields and enums
+- **Geospatial**: PostGIS `location` geography column with GIST index
+- **Triggers**: Auto-update `updated_at` and compute `location` from lat/lon
+- **Indexes**: Spatial, status, category, freshness, and composite indexes
+- **RLS Policies**: Public read, public insert, device-based update
+
+#### Created Helper Functions
+- `search_nearby_resources()` - Radius-based geospatial search with filters
+- Supports category and status filtering
+- Returns results sorted by distance and freshness
+- Configurable radius (default 5km)
+
+#### Documentation and Developer Experience
+- Comprehensive `supabase/README.md` with schema reference
+- `supabase/QUICKSTART.md` - 10-minute setup guide
+- `supabase/seed.sql` - 25+ realistic sample resources for testing
+- Detailed explanations of all constraints and validations
+- Clear PostGIS decision recommendation (enable Day 1)
+
+#### Key Technical Decisions
+- **PostGIS on Day 1**: Enabled immediately to avoid migration complexity
+- **Anonymous posting**: MVP allows public resource creation
+- **device_id_hash**: SHA-256 tracking for lightweight ownership
+- **Enum constraints**: Database-level enforcement of valid categories/statuses
+- **Automatic geography**: Triggers compute PostGIS point from lat/lon
+
 ## Current State
 
 ### What Works
@@ -64,12 +101,17 @@
 - ✅ Clean, responsive layout
 - ✅ Type-safe resource definitions
 - ✅ Linting and formatting configured
+- ✅ Complete database schema ready to deploy
+- ✅ PostGIS spatial search functions
+- ✅ Row Level Security policies configured
+- ✅ Sample seed data for testing
 
-### What's Next (Day 2-3)
+### What's Next (Day 2)
 - Backend connection with Supabase client
-- Database schema and policies
+- Install @supabase/supabase-js in frontend
 - Typed data access functions
 - Test connection from frontend to backend
+- Verify migrations in actual Supabase project
 
 ## Technical Decisions
 
@@ -83,6 +125,20 @@
 - Shared components in `lib/components/`
 - Centralized types in `lib/types/`
 - State management via Svelte stores (no external state library)
+
+### Backend Architecture
+- **Supabase + PostGIS**: Fast geospatial queries without custom backend
+- **Row Level Security**: Database-level permissions for MVP security
+- **Automatic timestamps**: Triggers handle updated_at maintenance
+- **Computed geography**: PostGIS point auto-computed from lat/lon
+- **Migration-based schema**: Version-controlled SQL migrations
+
+### PostGIS Decision
+- Enabled immediately (Day 1) instead of waiting until Day 5
+- Core MVP feature (radius search) requires spatial queries
+- Avoids data migration and query rewrite later
+- Minimal overhead for MVP scale (hundreds to thousands of pins)
+- GIST index provides fast nearby searches
 
 ### Development Philosophy
 - Text-first, low-bandwidth optimized
