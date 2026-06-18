@@ -1,5 +1,14 @@
 <script lang="ts">
   import { isOnline } from '$lib/stores';
+  import { Card, Button } from '$lib/components/ui';
+  import { LoadingState, ErrorState } from '$lib/components/states';
+
+  let showLoading = $state(true);
+  let showError = $state(true);
+
+  function handleRetry() {
+    showError = false;
+  }
 </script>
 
 <div class="page">
@@ -13,6 +22,30 @@
         <p class="info-note">✓ Cached results available offline</p>
       {/if}
     </div>
+  </div>
+
+  <div class="example-card">
+    <Card padding="medium">
+      <div class="example-header">
+        <h3>State Components Example</h3>
+        <Button type="button" variant="ghost" size="small" on:click={() => (showLoading = !showLoading)}>
+          Toggle Loading
+        </Button>
+      </div>
+
+      {#if showLoading}
+        <LoadingState message="Loading nearby resources…" />
+      {/if}
+
+      {#if showError}
+        <ErrorState message="Could not load list data. Please try again." onRetry={handleRetry} />
+      {:else}
+        <p class="retry-success">✓ Retry clicked (error cleared in demo state).</p>
+        <Button type="button" variant="ghost" size="small" on:click={() => (showError = true)}>
+          Show Error Again
+        </Button>
+      {/if}
+    </Card>
   </div>
 </div>
 
@@ -47,5 +80,31 @@
     color: #48bb78;
     font-weight: 500;
     margin-top: 1rem;
+  }
+
+  .example-card {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .example-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #2d3748;
+  }
+
+  .retry-success {
+    margin: 0;
+    color: #2f855a;
+    font-size: 0.9rem;
   }
 </style>

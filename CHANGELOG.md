@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-18) - Day 2: Reusable Loading/Error States
+- Added `frontend/src/lib/components/states/LoadingState.svelte`
+  - Optional `message` prop
+  - Lightweight spinner-based loading feedback
+- Added `frontend/src/lib/components/states/ErrorState.svelte`
+  - Required `message` prop
+  - Optional retry action via `onRetry`
+  - Reuses existing `Button` component for retry CTA
+- Added `frontend/src/lib/components/states/index.ts` for grouped exports
+- Added usage example on existing placeholder page: `frontend/src/routes/list/+page.svelte`
+  - Demonstrates `LoadingState` with custom message
+  - Demonstrates `ErrorState` with retry callback and simple demo recovery state
+
 ### Added (2026-06-18) - App Shell Offline Indicator
 - Added `frontend/src/lib/components/OfflineBanner.svelte` to expose connectivity state in the app shell
 - Reused existing `isOnline` store from `src/lib/stores/online.ts` (no new store created)

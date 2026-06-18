@@ -169,6 +169,29 @@
   - sticky placement below header so state is clearly visible while scrolling
 - Wired banner into app shell in `frontend/src/routes/+layout.svelte` directly under `<Header />`
 
+### Day 2 - Reusable Data-State Components (June 18, 2026)
+
+#### Added Loading and Error UI States for Future Data-Driven Screens
+- Created new folder: `frontend/src/lib/components/states/`
+- Added `LoadingState.svelte`:
+  - Optional `message` prop (default: `Loading…`)
+  - Lightweight inline spinner + compact text
+  - Accessible status semantics with `role="status"` and polite live region
+- Added `ErrorState.svelte`:
+  - Required `message` prop
+  - Optional `onRetry` callback
+  - Reuses existing `Button` UI component for retry action
+  - Accessible error semantics with `role="alert"`
+- Added `frontend/src/lib/components/states/index.ts` for clean grouped exports
+
+#### Added Usage Example on Existing Placeholder Page
+- Updated `frontend/src/routes/list/+page.svelte` to demonstrate both components
+- Example includes:
+  - `LoadingState` with custom message: `Loading nearby resources…`
+  - `ErrorState` with retry behavior (`onRetry`) and simple demo recovery state
+  - Toggle controls for showing/hiding loading and re-showing error
+- Kept example lightweight and isolated so it is easy to reuse later in real data fetch flows
+
 ### What Works
 - ✅ SvelteKit dev server runs successfully
 - ✅ Navigation between all placeholder pages
@@ -185,6 +208,7 @@
 - ✅ Content padding prevents nav overlap
 - ✅ Reusable UI component library (Button, Input, Textarea, Card, Badge)
 - ✅ App-shell offline banner using existing connectivity store
+- ✅ Reusable state components (`LoadingState`, `ErrorState`) for async/data-driven screens
 
 ### What's Next
 - Backend connection with Supabase client

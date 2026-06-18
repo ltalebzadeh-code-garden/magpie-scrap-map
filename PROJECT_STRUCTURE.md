@@ -35,6 +35,10 @@ frontend/
 ├── src/
 │   ├── lib/
 │   │   ├── components/
+│   │   │   ├── states/
+│   │   │   │   ├── LoadingState.svelte # Reusable loading state UI
+│   │   │   │   ├── ErrorState.svelte   # Reusable error state UI with optional retry
+│   │   │   │   └── index.ts            # State component exports
 │   │   │   ├── ui/
 │   │   │   │   ├── Button.svelte       # Reusable button component
 │   │   │   │   ├── Input.svelte        # Text input component
@@ -121,10 +125,13 @@ frontend/
 - `frontend/src/lib/components/Header.svelte` - App header with online indicator
 - `frontend/src/lib/components/OfflineBanner.svelte` - Offline message banner in app shell
 - `frontend/src/lib/components/Nav.svelte` - Navigation tabs
+- `frontend/src/lib/components/states/LoadingState.svelte` - Minimal loading state with optional message
+- `frontend/src/lib/components/states/ErrorState.svelte` - Error state with message and optional retry action
+- `frontend/src/lib/components/states/index.ts` - Centralized state component exports
 
 ### Routes (Pages)
 - `frontend/src/routes/+page.svelte` - Map view (home)
-- `frontend/src/routes/list/+page.svelte` - List view
+- `frontend/src/routes/list/+page.svelte` - List view + state component usage example
 - `frontend/src/routes/add/+page.svelte` - Add resource form
 - `frontend/src/routes/offline/+page.svelte` - Offline queue
 
