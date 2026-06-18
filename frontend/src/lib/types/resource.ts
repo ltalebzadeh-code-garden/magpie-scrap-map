@@ -52,3 +52,8 @@ export interface CreateResourceInput {
   contact_method?: string;
   photo_url?: string;
 }
+
+export interface UpdateResourceStatusInput {
+  id: string;
+  status: ResourceStatus;
+}

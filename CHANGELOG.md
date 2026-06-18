@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-19)
+
+#### Resource Status Update Flow + MVP RLS Hardening
+- Added focused status update input type: `UpdateResourceStatusInput`
+  - file: `frontend/src/lib/types/resource.ts`
+  - re-exported via `frontend/src/lib/types/index.ts`
+- Added `updateResourceStatus(input)` in `frontend/src/lib/server/resources.ts`
+  - validates `id` and `status` with existing lightweight service validation pattern
+  - reuses existing `ResourceStatus` values/allow-list
+  - updates only status via RPC `public_update_resource_status`
+  - returns minimal payload (`id`, `status`, `updated_at`)
+- Added list-page server action: `updateStatus`
+  - file: `frontend/src/routes/list/+page.server.ts`
+  - handles structured success/error responses consistent with current create flow
+- Updated list page UI to support per-item status updates
+  - file: `frontend/src/routes/list/+page.svelte`
+  - adds status selector + update action per resource row
+  - surfaces submission success/error feedback
+- Added migration: `supabase/migrations/20260619000003_mvp_rls_and_status_update.sql`
+  - explicitly enables RLS on `resources`
+  - defines explicit anonymous SELECT policy (`anon_read_resources`)
+  - defines explicit anonymous INSERT policy (`anon_insert_resources`)
+  - intentionally avoids direct anonymous table UPDATE policy
+  - adds status-only `SECURITY DEFINER` function `public_update_resource_status`
+  - grants execute only to `anon`
+  - includes explicit risk notes: direct anonymous updates are unsafe for MVP
+
 ### Added (2026-06-18)
 
 #### Resource Data Flows (MVP)

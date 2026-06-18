@@ -22,7 +22,8 @@ magpie/
 supabase/
 ├── migrations/
 │   ├── 20260616000001_initial_schema.sql       # Core resources table with PostGIS
-│   └── 20260616000002_nearby_search_function.sql # Geospatial search function
+│   ├── 20260616000002_nearby_search_function.sql # Geospatial search function
+│   └── 20260619000003_mvp_rls_and_status_update.sql # MVP RLS policies + status update function
 ├── seed.sql                                     # Sample data for development
 ├── README.md                                    # Schema documentation and reference
 └── QUICKSTART.md                                # 10-minute setup guide
@@ -102,6 +103,7 @@ frontend/
 ### Database Schema
 - `supabase/migrations/20260616000001_initial_schema.sql` - Resources table, triggers, indexes, RLS
 - `supabase/migrations/20260616000002_nearby_search_function.sql` - Geospatial search
+- `supabase/migrations/20260619000003_mvp_rls_and_status_update.sql` - Explicit MVP RLS policies + status-only public update function
 - `supabase/seed.sql` - Sample test data (25+ resources)
 - `supabase/README.md` - Complete schema reference and documentation
 - `supabase/QUICKSTART.md` - Backend setup guide

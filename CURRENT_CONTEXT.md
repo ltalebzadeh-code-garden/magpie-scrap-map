@@ -1,40 +1,39 @@
 # CURRENT_CONTEXT
 
-Goal: Connect frontend to Supabase and support first working resource create/fetch flows without map integration
+Goal: Implement MVP resource status update flow and define minimal, explicit RLS posture
 
 Scope:
-- set up Supabase client
-- align DB-facing resource types
-- add resource create/fetch functions
-- add simple server-side validation
-- wire one existing page/form to demonstrate flows
+- add focused resource status update function (status-only path)
+- reuse existing status types and validation patterns
+- wire minimal status update action from list flow
+- define explicit MVP RLS SQL policies (anon read + anon insert)
+- avoid unsafe direct anonymous table update policy
 
 Done:
-- SvelteKit app shell exists
-- placeholder pages exist
-- online/offline store exists
-- base resource/category/status types exist
-- category labels/utilities exist
-- `CreateResourceInput` type added and exported
-- Supabase JS client added to frontend dependencies
-- reusable server data layer added at `frontend/src/lib/server/resources.ts`
-- `createResource` implemented with:
-  - required field validation
-  - category/status allow-list validation
-  - basic text length checks
-  - coordinate range checks
-  - structured result shape (`{ ok, data } | { ok, error }`)
-- `fetchRecentResources` implemented ordered by `created_at DESC`
-- Add form wired to server action (`frontend/src/routes/add/+page.server.ts`)
-- Add page now posts to server action and renders success/validation errors
-- List page wired to server load (`frontend/src/routes/list/+page.server.ts`)
-- List page now renders recent resources from Supabase (no map integration)
+- Existing create/fetch flows retained as-is
+- `UpdateResourceStatusInput` type added and exported
+- `updateResourceStatus(input)` implemented in `frontend/src/lib/server/resources.ts`
+  - focused input shape (`id`, `status`)
+  - status allow-list reuse (`ResourceStatus` values)
+  - lightweight validation (required + UUID format + status validity)
+  - calls `public_update_resource_status` RPC and returns `{ id, status, updated_at }`
+- List route server action added: `updateStatus` in `frontend/src/routes/list/+page.server.ts`
+  - reuses existing structured service result and validation error pattern
+- List page UI updated (`frontend/src/routes/list/+page.svelte`)
+  - per-row status update form posting to `?/updateStatus`
+  - success/error feedback rendering
+- New migration added: `supabase/migrations/20260619000003_mvp_rls_and_status_update.sql`
+  - explicitly enables RLS
+  - explicit anon SELECT policy
+  - explicit anon INSERT policy
+  - removes direct table UPDATE policy for anon
+  - adds status-only `SECURITY DEFINER` function `public_update_resource_status`
+  - documents risks of direct anonymous updates and safer temporary alternative
 
 Next:
-- optional: align remaining Svelte 5 warnings in pre-existing/shared files
-- optional: add DB type generation for stricter Supabase typing (remove temporary cast in insert)
-- optional: implement status update flow (separate task)
-- optional: define anti-spam and rate-limit strategy in backend edge layer
+- recommended follow-up: add lightweight ownership token/device hash check to status-update RPC
+- recommended follow-up: add anti-spam/rate-limiting edge checks for anon insert/update endpoints
+- optional: align remaining pre-existing Svelte warnings unrelated to this task
 
 Constraints:
 - keep MVP minimal and understandable
@@ -42,7 +41,7 @@ Constraints:
 - do not add map integration
 - do not rebuild existing shell/UI unless needed for testing
 - anonymous read/insert is expected for MVP
-- avoid unsafe anonymous update policy unless clearly justified
+- direct anonymous table UPDATE policy is considered unsafe and intentionally avoided
 - keep validation lightweight and easy to extend
 
 Key Decisions:
@@ -61,6 +60,7 @@ Files:
 - frontend/src/routes/add/+page.svelte
 - frontend/src/routes/list/+page.server.ts
 - frontend/src/routes/list/+page.svelte
+- supabase/migrations/20260619000003_mvp_rls_and_status_update.sql
 
 Skip:
 - do not recreate existing routes/components/types unless needed

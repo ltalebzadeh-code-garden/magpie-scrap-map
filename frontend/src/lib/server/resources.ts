@@ -1,4 +1,11 @@
-import type { CreateResourceInput, Resource, ResourceCategory, ResourceStatus, ResourceSummary } from '$lib/types';
+import type {
+  CreateResourceInput,
+  Resource,
+  ResourceCategory,
+  ResourceStatus,
+  ResourceSummary,
+  UpdateResourceStatusInput
+} from '$lib/types';
 import { categoryList } from '$lib/utils';
 import { getSupabaseClient } from './supabase';
 
@@ -162,6 +169,41 @@ export async function fetchRecentResources(limit = 20): Promise<ServiceResult<Re
   };
 }
 
+export async function updateResourceStatus(
+  input: UpdateResourceStatusInput
+): Promise<ServiceResult<Pick<Resource, 'id' | 'status' | 'updated_at'>>> {
+  const supabase = getSupabaseClient();
+
+  const validation = validateUpdateResourceStatusInput(input);
+  if (!validation.ok) {
+    return validation;
+  }
+
+  const { data, error } = await (supabase as any)
+    .rpc('public_update_resource_status', {
+      p_resource_id: validation.value.id,
+      p_status: validation.value.status
+    })
+    .single();
+
+  const typedData = data as { id: string; status: ResourceStatus; updated_at: string } | null;
+
+  if (error || !typedData) {
+    return {
+      ok: false,
+      error: {
+        code: 'DATABASE_ERROR',
+        message: error?.message || 'Failed to update resource status.'
+      }
+    };
+  }
+
+  return {
+    ok: true,
+    data: typedData
+  };
+}
+
 function validateCreateResourceInput(input: CreateResourceInput):
   | { ok: true; value: CreateResourceInput }
   | { ok: false; error: ServiceError } {
@@ -239,6 +281,45 @@ function validateCreateResourceInput(input: CreateResourceInput):
       location_accuracy: input.location_accuracy || 'approximate',
       contact_method: contactMethod || undefined,
       photo_url: photoUrl || undefined
+    }
+  };
+}
+
+function validateUpdateResourceStatusInput(input: UpdateResourceStatusInput):
+  | { ok: true; value: UpdateResourceStatusInput }
+  | { ok: false; error: ServiceError } {
+  const fieldErrors: Record<string, string> = {};
+
+  const id = input.id?.trim() || '';
+
+  if (!id) {
+    fieldErrors.id = 'Resource id is required.';
+  } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+    fieldErrors.id = 'Resource id must be a valid UUID.';
+  }
+
+  if (!input.status) {
+    fieldErrors.status = 'Status is required.';
+  } else if (!allowedStatuses.includes(input.status)) {
+    fieldErrors.status = 'Status is invalid.';
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return {
+      ok: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Please fix the highlighted fields and try again.',
+        fieldErrors
+      }
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      id,
+      status: input.status
     }
   };
 }

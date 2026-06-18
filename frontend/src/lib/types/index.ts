@@ -4,5 +4,6 @@ export type {
   ResourceStatus,
   ResourceCategory,
   LocationAccuracy,
-  CreateResourceInput
+  CreateResourceInput,
+  UpdateResourceStatusInput
 } from './resource';

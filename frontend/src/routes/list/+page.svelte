@@ -3,14 +3,24 @@
   import { Card, Button, Badge } from '$lib/components/ui';
   import { LoadingState, ErrorState } from '$lib/components/states';
   import { categoryLabels } from '$lib/utils';
-  import type { ResourceSummary } from '$lib/types';
+  import type { ResourceSummary, ResourceStatus } from '$lib/types';
 
   type ListPageData = {
     resources: ResourceSummary[];
     error: string | null;
   };
 
-  let { data } = $props<{ data: ListPageData }>();
+  type ListPageForm = {
+    success?: boolean;
+    message?: string;
+    fieldErrors?: Record<string, string>;
+    values?: {
+      id?: string;
+      status?: string;
+    };
+  };
+
+  let { data, form } = $props<{ data: ListPageData; form?: ListPageForm }>();
 
   let showLoading = $state(true);
   let showError = $state(true);
@@ -21,6 +31,18 @@
 
   const resources = $derived(data.resources ?? []);
   const loadError = $derived(data.error);
+  const formError = $derived(form?.success === false ? form?.message ?? null : null);
+  const formSuccess = $derived(form?.success === true ? form?.message ?? null : null);
+
+  const statusOptions: ResourceStatus[] = ['available', 'claimed', 'possibly_gone', 'expired'];
+
+  function labelForStatus(status: ResourceStatus): string {
+    if (status === 'possibly_gone') {
+      return 'Possibly Gone';
+    }
+
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  }
 </script>
 
 <div class="page-container">
@@ -41,6 +63,14 @@
       <Badge variant="info">{resources.length} items</Badge>
     </div>
 
+    {#if formSuccess}
+      <p class="submit-success">{formSuccess}</p>
+    {/if}
+
+    {#if formError}
+      <p class="submit-error">{formError}</p>
+    {/if}
+
     {#if loadError}
       <ErrorState message={loadError} />
     {:else if resources.length === 0}
@@ -60,6 +90,19 @@
               <span>{new Date(resource.created_at).toLocaleString()}</span>
             </div>
             <p class="resource-item__coords">{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</p>
+
+            <form method="POST" action="?/updateStatus" class="status-form">
+              <input type="hidden" name="id" value={resource.id} />
+              <label>
+                <span class="status-label">Status</span>
+                <select name="status" class="status-select" value={resource.status}>
+                  {#each statusOptions as option}
+                    <option value={option}>{labelForStatus(option)}</option>
+                  {/each}
+                </select>
+              </label>
+              <Button type="submit" size="small" variant="ghost">Update</Button>
+            </form>
           </li>
         {/each}
       </ul>
@@ -174,6 +217,41 @@
     color: var(--color-muted);
     font-size: 0.8125rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  }
+
+  .submit-success {
+    margin: 0;
+    color: var(--color-success);
+    font-size: 0.9rem;
+  }
+
+  .submit-error {
+    margin: 0;
+    color: var(--color-error);
+    font-size: 0.9rem;
+  }
+
+  .status-form {
+    display: flex;
+    align-items: end;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .status-label {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    margin-bottom: var(--space-1);
+  }
+
+  .status-select {
+    min-height: 36px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.6rem;
+    background: var(--color-surface);
+    color: var(--color-text);
   }
 
   @media (max-width: 480px) {
