@@ -1,16 +1,23 @@
 <script lang="ts">
-  export let value: string = '';
-  export let type: 'text' | 'email' | 'tel' | 'number' | 'url' | 'search' = 'text';
-  export let placeholder: string = '';
-  export let disabled: boolean = false;
-  export let required: boolean = false;
-  export let id: string = '';
-  export let name: string = '';
-  export let autocomplete: string = '';
-  export let maxlength: number | undefined = undefined;
-  export let min: number | string | undefined = undefined;
-  export let max: number | string | undefined = undefined;
-  export let step: number | string | undefined = undefined;
+  import type { HTMLInputAttributes } from 'svelte/elements';
+
+  type InputProps = HTMLInputAttributes;
+
+  let {
+    value = $bindable(''),
+    type = 'text',
+    placeholder = '',
+    disabled = false,
+    required = false,
+    id = undefined,
+    name = undefined,
+    autocomplete = undefined,
+    maxlength = undefined,
+    min = undefined,
+    max = undefined,
+    step = undefined,
+    ...restProps
+  }: InputProps = $props();
 </script>
 
 <input
@@ -26,11 +33,8 @@
   {min}
   {max}
   {step}
+  {...restProps}
   bind:value
-  on:input
-  on:change
-  on:focus
-  on:blur
 />
 
 <style>

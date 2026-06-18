@@ -43,6 +43,7 @@ frontend/
 │   │   │   │   ├── Badge.svelte        # Status/category badge component
 │   │   │   │   └── index.ts            # UI component exports
 │   │   │   ├── Header.svelte       # App header with title and status
+│   │   │   ├── OfflineBanner.svelte # Connectivity banner shown when offline
 │   │   │   └── Nav.svelte          # Main navigation component
 │   │   ├── stores/
 │   │   │   ├── online.ts           # Online/offline state store
@@ -118,6 +119,7 @@ frontend/
 
 ### Components
 - `frontend/src/lib/components/Header.svelte` - App header with online indicator
+- `frontend/src/lib/components/OfflineBanner.svelte` - Offline message banner in app shell
 - `frontend/src/lib/components/Nav.svelte` - Navigation tabs
 
 ### Routes (Pages)

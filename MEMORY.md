@@ -155,6 +155,20 @@
 - Component showcase section demonstrating all variants
 - Form validation states
 
+### Day 2 - App Shell Connectivity Banner (June 18, 2026)
+
+#### Integrated Existing Online/Offline Store into Layout UI
+- Added new `frontend/src/lib/components/OfflineBanner.svelte`
+- Reused existing `isOnline` store from `src/lib/stores/online.ts` (no new connectivity store created)
+- Banner behavior:
+  - **Offline**: shows `Offline — changes will be saved locally`
+  - **Online**: hidden for minimal UI noise
+- Mobile-friendly styling:
+  - compact text size and padding
+  - centered content with safe wrapping behavior
+  - sticky placement below header so state is clearly visible while scrolling
+- Wired banner into app shell in `frontend/src/routes/+layout.svelte` directly under `<Header />`
+
 ### What Works
 - ✅ SvelteKit dev server runs successfully
 - ✅ Navigation between all placeholder pages
@@ -170,6 +184,7 @@
 - ✅ Comfortable tap targets and clear active states
 - ✅ Content padding prevents nav overlap
 - ✅ Reusable UI component library (Button, Input, Textarea, Card, Badge)
+- ✅ App-shell offline banner using existing connectivity store
 
 ### What's Next
 - Backend connection with Supabase client

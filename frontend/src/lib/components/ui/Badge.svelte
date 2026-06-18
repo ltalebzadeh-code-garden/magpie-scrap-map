@@ -1,78 +1,79 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import type { ResourceStatus, ResourceCategory } from '$lib/types';
 
   type BadgeVariant = 'status' | 'category' | 'info' | 'warning' | 'success' | 'error';
 
-  export let variant: BadgeVariant = 'info';
-  export let status: ResourceStatus | undefined = undefined;
-  export let category: ResourceCategory | undefined = undefined;
-  export let size: 'small' | 'medium' = 'medium';
+  type BadgeProps = {
+    variant?: BadgeVariant;
+    status?: ResourceStatus;
+    category?: ResourceCategory;
+    size?: 'small' | 'medium';
+    children?: Snippet;
+  };
 
-  // Automatically determine variant from status if provided
-  $: if (status) {
-    variant = 'status';
-  } else if (category) {
-    variant = 'category';
-  }
+  const {
+    variant = 'info',
+    status = undefined,
+    category = undefined,
+    size = 'medium',
+    children
+  }: BadgeProps = $props();
 
-  // Map status to color classes
-  $: statusClass = status
-    ? {
-        available: 'status-available',
-        claimed: 'status-claimed',
-        possibly_gone: 'status-possibly-gone',
-        expired: 'status-expired'
-      }[status]
-    : '';
+  const statusClassMap: Record<ResourceStatus, string> = {
+    available: 'status-available',
+    claimed: 'status-claimed',
+    possibly_gone: 'status-possibly-gone',
+    expired: 'status-expired'
+  };
 
-  // Map category to color classes
-  $: categoryClass = category
-    ? {
-        scrap_metal: 'category-metal',
-        wood: 'category-wood',
-        tools: 'category-tools',
-        electrical: 'category-electrical',
-        plumbing: 'category-plumbing',
-        containers: 'category-containers',
-        building_materials: 'category-building',
-        fuel: 'category-fuel',
-        other: 'category-other'
-      }[category]
-    : '';
+  const categoryClassMap: Record<ResourceCategory, string> = {
+    scrap_metal: 'category-metal',
+    wood: 'category-wood',
+    tools: 'category-tools',
+    electrical: 'category-electrical',
+    plumbing: 'category-plumbing',
+    containers: 'category-containers',
+    building_materials: 'category-building',
+    fuel: 'category-fuel',
+    other: 'category-other'
+  };
 
-  // Display labels
-  $: displayText = status
-    ? {
-        available: 'Available',
-        claimed: 'Claimed',
-        possibly_gone: 'Possibly Gone',
-        expired: 'Expired'
-      }[status]
-    : category
-      ? {
-          scrap_metal: 'Scrap Metal',
-          wood: 'Wood',
-          tools: 'Tools',
-          electrical: 'Electrical',
-          plumbing: 'Plumbing',
-          containers: 'Containers',
-          building_materials: 'Building Materials',
-          fuel: 'Fuel',
-          other: 'Other'
-        }[category]
-      : '';
+  const statusLabelMap: Record<ResourceStatus, string> = {
+    available: 'Available',
+    claimed: 'Claimed',
+    possibly_gone: 'Possibly Gone',
+    expired: 'Expired'
+  };
+
+  const categoryLabelMap: Record<ResourceCategory, string> = {
+    scrap_metal: 'Scrap Metal',
+    wood: 'Wood',
+    tools: 'Tools',
+    electrical: 'Electrical',
+    plumbing: 'Plumbing',
+    containers: 'Containers',
+    building_materials: 'Building Materials',
+    fuel: 'Fuel',
+    other: 'Other'
+  };
+
+  const effectiveVariant = $derived(status ? 'status' : category ? 'category' : variant);
+  const statusClass = $derived(status ? statusClassMap[status] : '');
+  const categoryClass = $derived(category ? categoryClassMap[category] : '');
+  const displayText = $derived(status ? statusLabelMap[status] : category ? categoryLabelMap[category] : '');
 </script>
 
 <span
   class="badge"
   class:small={size === 'small'}
   class:medium={size === 'medium'}
-  class:info={variant === 'info'}
-  class:warning={variant === 'warning'}
-  class:success={variant === 'success'}
-  class:error={variant === 'error'}
-  class:status={variant === 'status'}
-  class:category={variant === 'category'}
+  class:info={effectiveVariant === 'info'}
+  class:warning={effectiveVariant === 'warning'}
+  class:success={effectiveVariant === 'success'}
+  class:error={effectiveVariant === 'error'}
+  class:status={effectiveVariant === 'status'}
+  class:category={effectiveVariant === 'category'}
   class:status-available={statusClass === 'status-available'}
   class:status-claimed={statusClass === 'status-claimed'}
   class:status-possibly-gone={statusClass === 'status-possibly-gone'}
@@ -90,7 +91,7 @@
   {#if displayText}
     {displayText}
   {:else}
-    <slot />
+    {@render children?.()}
   {/if}
 </span>
 

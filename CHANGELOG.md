@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-18) - App Shell Offline Indicator
+- Added `frontend/src/lib/components/OfflineBanner.svelte` to expose connectivity state in the app shell
+- Reused existing `isOnline` store from `src/lib/stores/online.ts` (no new store created)
+- Offline behavior: show banner message `Offline — changes will be saved locally`
+- Online behavior: banner is hidden to keep UI minimal
+- Wired `OfflineBanner` into `frontend/src/routes/+layout.svelte` directly below `Header`
+- Kept implementation lightweight and mobile-friendly with compact spacing and readable text
+
 ### Added (2026-06-18) - Day 2: Mobile-First Layout
 
 #### Reusable UI Components

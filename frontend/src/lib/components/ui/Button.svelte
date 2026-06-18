@@ -1,12 +1,24 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+  import type { HTMLButtonAttributes } from 'svelte/elements';
+
   type ButtonVariant = 'primary' | 'secondary' | 'ghost';
   type ButtonSize = 'small' | 'medium' | 'large';
 
-  export let variant: ButtonVariant = 'primary';
-  export let size: ButtonSize = 'medium';
-  export let disabled: boolean = false;
-  export let type: 'button' | 'submit' | 'reset' = 'button';
-  export let fullWidth: boolean = false;
+  type ButtonProps = HTMLButtonAttributes & {
+    variant?: ButtonVariant;
+    size?: ButtonSize;
+    fullWidth?: boolean;
+    children?: Snippet;
+  };
+
+  let {
+    variant = 'primary',
+    size = 'medium',
+    fullWidth = false,
+    children,
+    ...restProps
+  }: ButtonProps = $props();
 </script>
 
 <button
@@ -18,11 +30,10 @@
   class:medium={size === 'medium'}
   class:large={size === 'large'}
   class:full-width={fullWidth}
-  {disabled}
-  {type}
+  {...restProps}
   on:click
 >
-  <slot />
+  {@render children?.()}
 </button>
 
 <style>

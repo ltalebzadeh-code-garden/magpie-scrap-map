@@ -1,10 +1,12 @@
 <script lang="ts">
   import Header from '$lib/components/Header.svelte';
+  import OfflineBanner from '$lib/components/OfflineBanner.svelte';
   import Nav from '$lib/components/Nav.svelte';
 </script>
 
 <div class="app">
   <Header />
+  <OfflineBanner />
   <main>
     <slot />
   </main>

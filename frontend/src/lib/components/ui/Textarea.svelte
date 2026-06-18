@@ -1,13 +1,24 @@
 <script lang="ts">
-  export let value: string = '';
-  export let placeholder: string = '';
-  export let disabled: boolean = false;
-  export let required: boolean = false;
-  export let id: string = '';
-  export let name: string = '';
-  export let rows: number = 4;
-  export let maxlength: number | undefined = undefined;
-  export let resize: 'none' | 'vertical' | 'horizontal' | 'both' = 'vertical';
+  import type { HTMLTextareaAttributes } from 'svelte/elements';
+
+  type ResizeMode = 'none' | 'vertical' | 'horizontal' | 'both';
+
+  type TextareaProps = HTMLTextareaAttributes & {
+    resize?: ResizeMode;
+  };
+
+  let {
+    value = $bindable(''),
+    placeholder = '',
+    disabled = false,
+    required = false,
+    id = undefined,
+    name = undefined,
+    rows = 4,
+    maxlength = undefined,
+    resize = 'vertical',
+    ...restProps
+  }: TextareaProps = $props();
 </script>
 
 <textarea
@@ -23,12 +34,9 @@
   {name}
   {rows}
   {maxlength}
+  {...restProps}
   bind:value
-  on:input
-  on:change
-  on:focus
-  on:blur
-/>
+></textarea>
 
 <style>
   .textarea {

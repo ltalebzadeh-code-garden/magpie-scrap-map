@@ -1,7 +1,29 @@
 <script lang="ts">
-  export let padding: 'none' | 'small' | 'medium' | 'large' = 'medium';
-  export let hover: boolean = false;
-  export let clickable: boolean = false;
+  import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  type CardProps = HTMLAttributes<HTMLDivElement> & {
+    padding?: 'none' | 'small' | 'medium' | 'large';
+    hover?: boolean;
+    clickable?: boolean;
+    children?: Snippet;
+  };
+
+  let {
+    padding = 'medium',
+    hover = false,
+    clickable = false,
+    children,
+    ...restProps
+  }: CardProps = $props();
+
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (!clickable) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      (e.currentTarget as HTMLDivElement | null)?.click();
+    }
+  };
 </script>
 
 <div
@@ -12,12 +34,12 @@
   class:padding-large={padding === 'large'}
   class:hover={hover}
   class:clickable={clickable}
-  on:click
+  {...restProps}
   role={clickable ? 'button' : undefined}
   tabindex={clickable ? 0 : undefined}
-  on:keydown={(e) => clickable && (e.key === 'Enter' || e.key === ' ') && e.currentTarget.click()}
+  onkeydown={handleKeydown}
 >
-  <slot />
+  {@render children?.()}
 </div>
 
 <style>
