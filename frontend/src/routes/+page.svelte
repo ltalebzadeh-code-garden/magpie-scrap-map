@@ -2,49 +2,36 @@
   import { isOnline } from '$lib/stores';
 </script>
 
-<div class="page">
-  <div class="placeholder">
+<div class="page-container">
+  <div class="surface-card surface-card--center placeholder-card">
     <h2>Map View</h2>
-    <div class="placeholder-content">
+    <div class="placeholder-content section-stack">
       <p>📍 Interactive map will be displayed here</p>
       <p>Shows nearby resources with markers and popups</p>
       {#if !$isOnline}
-        <p class="offline-note">⚠️ Map tiles may not load while offline</p>
+        <p class="state-note state-note--danger">⚠️ Map tiles may not load while offline</p>
       {/if}
     </div>
   </div>
 </div>
 
 <style>
-  .page {
-    padding: 1rem 0;
-  }
-
-  .placeholder {
-    background: white;
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    text-align: center;
+  .placeholder-card {
+    padding: var(--space-8);
   }
 
   h2 {
     margin-top: 0;
-    color: #2d3748;
+    margin-bottom: var(--space-3);
+    color: var(--color-text);
   }
 
   .placeholder-content {
-    color: #718096;
-    line-height: 1.8;
+    color: var(--color-muted);
+    line-height: var(--line-copy);
   }
 
   .placeholder-content p {
-    margin: 0.5rem 0;
-  }
-
-  .offline-note {
-    color: #f56565;
-    font-weight: 500;
-    margin-top: 1rem;
+    margin: 0;
   }
 </style>

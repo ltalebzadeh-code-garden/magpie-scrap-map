@@ -11,20 +11,20 @@
   }
 </script>
 
-<div class="page">
-  <div class="placeholder">
+<div class="page-container">
+  <div class="surface-card surface-card--center placeholder-card">
     <h2>List View</h2>
-    <div class="placeholder-content">
+    <div class="placeholder-content section-stack">
       <p>📋 Text-first list of nearby resources</p>
       <p>Filters: radius, category, status</p>
       <p>Sort by: distance or newest</p>
       {#if !$isOnline}
-        <p class="info-note">✓ Cached results available offline</p>
+        <p class="state-note state-note--success">✓ Cached results available offline</p>
       {/if}
     </div>
   </div>
 
-  <div class="example-card">
+  <div class="section-stack example-card">
     <Card padding="medium">
       <div class="example-header">
         <h3>State Components Example</h3>
@@ -50,61 +50,52 @@
 </div>
 
 <style>
-  .page {
-    padding: 1rem 0;
-  }
-
-  .placeholder {
-    background: white;
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    text-align: center;
+  .placeholder-card {
+    padding: var(--space-8);
   }
 
   h2 {
     margin-top: 0;
-    color: #2d3748;
+    margin-bottom: var(--space-3);
+    color: var(--color-text);
   }
 
   .placeholder-content {
-    color: #718096;
-    line-height: 1.8;
+    color: var(--color-muted);
+    line-height: var(--line-copy);
   }
 
   .placeholder-content p {
-    margin: 0.5rem 0;
-  }
-
-  .info-note {
-    color: #48bb78;
-    font-weight: 500;
-    margin-top: 1rem;
+    margin: 0;
   }
 
   .example-card {
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    margin-top: var(--space-2);
   }
 
   .example-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: var(--space-3);
   }
 
   h3 {
     margin: 0;
     font-size: 1rem;
-    color: #2d3748;
+    color: var(--color-text);
   }
 
   .retry-success {
     margin: 0;
-    color: #2f855a;
+    color: var(--color-success);
     font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    .example-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>

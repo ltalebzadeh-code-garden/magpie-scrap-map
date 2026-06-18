@@ -4,28 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Added (2026-06-18) - Day 2: Reusable Loading/Error States
-- Added `frontend/src/lib/components/states/LoadingState.svelte`
-  - Optional `message` prop
-  - Lightweight spinner-based loading feedback
-- Added `frontend/src/lib/components/states/ErrorState.svelte`
-  - Required `message` prop
-  - Optional retry action via `onRetry`
-  - Reuses existing `Button` component for retry CTA
-- Added `frontend/src/lib/components/states/index.ts` for grouped exports
-- Added usage example on existing placeholder page: `frontend/src/routes/list/+page.svelte`
-  - Demonstrates `LoadingState` with custom message
-  - Demonstrates `ErrorState` with retry callback and simple demo recovery state
+### Added (2026-06-18)
 
-### Added (2026-06-18) - App Shell Offline Indicator
-- Added `frontend/src/lib/components/OfflineBanner.svelte` to expose connectivity state in the app shell
-- Reused existing `isOnline` store from `src/lib/stores/online.ts` (no new store created)
-- Offline behavior: show banner message `Offline — changes will be saved locally`
-- Online behavior: banner is hidden to keep UI minimal
-- Wired `OfflineBanner` into `frontend/src/routes/+layout.svelte` directly below `Header`
-- Kept implementation lightweight and mobile-friendly with compact spacing and readable text
-
-### Added (2026-06-18) - Day 2: Mobile-First Layout
+#### Mobile-First Layout
+- Mobile-first bottom navigation pattern
+- Fixed positioning for navigation at bottom of viewport
+- Safe area inset support for devices with notches/home indicators
+- Comfortable tap targets (56px mobile, 60px desktop minimum)
+- Clear active route highlighting with top border and background tint
+- Content padding to prevent navigation overlap
+- Touch-optimized scrolling with `-webkit-overflow-scrolling`
+- Responsive font sizing across device sizes
+- Desktop hover support with `@media (hover: hover)`
+- Accessibility improvements with `aria-current` attributes
 
 #### Reusable UI Components
 - Created `src/lib/components/ui/` directory for UI primitives
@@ -43,17 +34,35 @@ All notable changes to this project will be documented in this file.
 - Form validation, character counter, and category preview
 - Component showcase section demonstrating all variants
 
-#### Mobile-First Layout
-- Mobile-first bottom navigation pattern
-- Fixed positioning for navigation at bottom of viewport
-- Safe area inset support for devices with notches/home indicators
-- Comfortable tap targets (56px mobile, 60px desktop minimum)
-- Clear active route highlighting with top border and background tint
-- Content padding to prevent navigation overlap
-- Touch-optimized scrolling with `-webkit-overflow-scrolling`
-- Responsive font sizing across device sizes
-- Desktop hover support with `@media (hover: hover)`
-- Accessibility improvements with `aria-current` attributes
+#### App Shell Offline Indicator
+- Added `frontend/src/lib/components/OfflineBanner.svelte` to expose connectivity state in the app shell
+- Reused existing `isOnline` store from `src/lib/stores/online.ts` (no new store created)
+- Offline behavior: show banner message `Offline — changes will be saved locally`
+- Online behavior: banner is hidden to keep UI minimal
+- Wired `OfflineBanner` into `frontend/src/routes/+layout.svelte` directly below `Header`
+- Kept implementation lightweight and mobile-friendly with compact spacing and readable text
+
+#### Reusable Loading/Error States
+- Added `frontend/src/lib/components/states/LoadingState.svelte`
+  - Optional `message` prop
+  - Lightweight spinner-based loading feedback
+- Added `frontend/src/lib/components/states/ErrorState.svelte`
+  - Required `message` prop
+  - Optional retry action via `onRetry`
+  - Reuses existing `Button` component for retry CTA
+- Added `frontend/src/lib/components/states/index.ts` for grouped exports
+- Added usage example on existing placeholder page: `frontend/src/routes/list/+page.svelte`
+  - Demonstrates `LoadingState` with custom message
+  - Demonstrates `ErrorState` with retry callback and simple demo recovery state
+
+#### CSS Consistency Pass
+- Added `frontend/src/app.css` as a minimal global style layer
+  - Small design tokens (color, spacing, typography, layout)
+  - Reusable page-level utility conventions (`.page-container`, `.section-stack`, `.surface-card`)
+- Imported global styles once in `frontend/src/routes/+layout.svelte`
+- Updated representative placeholder pages to use shared conventions while keeping local styles:
+  - `frontend/src/routes/+page.svelte`
+  - `frontend/src/routes/list/+page.svelte`
 
 ### Added (2026-06-16)
 - Complete Supabase database schema with PostGIS extension
@@ -95,41 +104,3 @@ All notable changes to this project will be documented in this file.
 - PostgreSQL with PostGIS (via Supabase)
 - Database migrations in `supabase/migrations/`
 
-## Roadmap
-
-### Day 2-3: Backend Connection
-- Supabase client integration
-- ✅ Database schema and policies (completed Day 1)
-- Typed data access functions
-- Test frontend-backend connection
-
-### Day 4-5: Map View
-- Leaflet integration
-- Marker rendering
-- Geolocation support
-- ✅ PostGIS nearby search function (completed Day 1)
-
-### Day 6: List View
-- Text-first resource browsing
-- Filters and sorting
-- Distance calculation
-- Local caching
-
-### Day 7: Add Resource
-- Form implementation
-- Validation
-- Location selection
-- Online submission
-
-### Day 8-9: Offline Support
-- IndexedDB with Dexie.js
-- Sync queue
-- Retry logic
-- Cached browsing
-
-### Day 10-15: Polish and Launch
-- Resource detail view
-- PWA configuration
-- Image handling
-- Performance optimization
-- Final testing and deployment

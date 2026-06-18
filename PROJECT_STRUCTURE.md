@@ -33,6 +33,7 @@ supabase/
 ```
 frontend/
 ├── src/
+│   ├── app.css                     # Global design tokens and page-level utility conventions
 │   ├── lib/
 │   │   ├── components/
 │   │   │   ├── states/
@@ -106,6 +107,7 @@ frontend/
 - `frontend/vite.config.ts` - Vite build configuration
 - `frontend/.eslintrc.cjs` - ESLint rules and parser config
 - `frontend/.prettierrc` - Code formatting rules
+- `frontend/src/app.css` - Global tokens (color/spacing/typography/layout) and shared page-level utilities
 
 ### Type Definitions
 - `frontend/src/lib/types/resource.ts` - Core resource data types

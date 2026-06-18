@@ -192,6 +192,31 @@
   - Toggle controls for showing/hiding loading and re-showing error
 - Kept example lightweight and isolated so it is easy to reuse later in real data fetch flows
 
+### Day 2 - CSS Consistency Pass (June 18, 2026)
+
+#### Defined a Minimal Styling Pattern (Mobile-First)
+- Added global stylesheet: `frontend/src/app.css`
+- Introduced a small token set for consistency without a CSS framework:
+  - **Colors** (`--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, etc.)
+  - **Spacing scale** (`--space-1` to `--space-8`)
+  - **Typography tokens** (`--text-xs`, `--text-sm`, `--text-md`, `--line-copy`)
+  - **Layout tokens** (`--content-max`, `--content-max-narrow`, radius/shadow)
+- Added lightweight global conventions for reusable page-level structure:
+  - `.page-container` for vertical page rhythm
+  - `.section-stack` for consistent section spacing
+  - `.surface-card` / `.surface-card--center` for neutral card surfaces
+  - `.small-label`, `.muted-text` for helper/muted copy
+  - `.state-note`, `.state-note--success`, `.state-note--danger` for compact state messages
+
+#### Kept Component Styling Local While Using Shared Tokens
+- Imported global stylesheet once in `frontend/src/routes/+layout.svelte`
+- Kept the rest of styling local to components/routes, but migrated repeated values to tokens
+- Updated `frontend/src/routes/+layout.svelte` to use spacing/layout variables for shell paddings and max-width
+- Performed a light consistency pass on representative placeholder screens:
+  - `frontend/src/routes/+page.svelte`
+  - `frontend/src/routes/list/+page.svelte`
+- Improved small-screen behavior in list example header (`<= 480px` stacks controls vertically)
+
 ### What Works
 - ✅ SvelteKit dev server runs successfully
 - ✅ Navigation between all placeholder pages
@@ -209,6 +234,7 @@
 - ✅ Reusable UI component library (Button, Input, Textarea, Card, Badge)
 - ✅ App-shell offline banner using existing connectivity store
 - ✅ Reusable state components (`LoadingState`, `ErrorState`) for async/data-driven screens
+- ✅ Minimal global styling pattern with tokens + reusable page conventions (mobile-first)
 
 ### What's Next
 - Backend connection with Supabase client
