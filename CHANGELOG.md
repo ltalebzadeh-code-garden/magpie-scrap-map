@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 
 ### Added (2026-06-18)
 
+#### Resource Data Flows (MVP)
+- Added server-side resource service module: `frontend/src/lib/server/resources.ts`
+  - `createResource(input)` with lightweight validation and structured result shape
+  - `fetchRecentResources(limit)` ordered newest-first (`created_at DESC`)
+- Added lightweight server-side validation before inserts:
+  - required fields
+  - allowed category/status values
+  - basic text length checks
+  - coordinate range checks for latitude/longitude
+- Added list server load route: `frontend/src/routes/list/+page.server.ts`
+  - fetches recent resources from Supabase for SSR page data
+- Updated list page: `frontend/src/routes/list/+page.svelte`
+  - renders recent resources from Supabase
+  - surfaces backend load errors with existing `ErrorState`
+- Updated add flow wiring:
+  - `frontend/src/routes/add/+page.server.ts` uses `createResource`
+  - `frontend/src/routes/add/+page.svelte` submits and renders validation/backend feedback
+
 #### Mobile-First Layout
 - Mobile-first bottom navigation pattern
 - Fixed positioning for navigation at bottom of viewport

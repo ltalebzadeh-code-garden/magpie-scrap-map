@@ -40,3 +40,15 @@ export interface ResourceSummary {
   created_at: string;
   distance?: number;
 }
+
+export interface CreateResourceInput {
+  title: string;
+  description: string;
+  category: ResourceCategory;
+  status: ResourceStatus;
+  latitude: number;
+  longitude: number;
+  location_accuracy?: LocationAccuracy;
+  contact_method?: string;
+  photo_url?: string;
+}

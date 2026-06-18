@@ -59,6 +59,9 @@ frontend/
 │   │   ├── utils/
 │   │   │   ├── categories.ts       # Category labels and lists
 │   │   │   └── index.ts            # Utility exports
+│   │   ├── server/
+│   │   │   ├── supabase.ts         # Supabase server client initialization
+│   │   │   └── resources.ts        # Resource data access + validation service
 │   │   ├── offline/
 │   │   │   └── README.md           # Placeholder for IndexedDB utilities
 │   │   ├── index.ts                # Main lib exports
@@ -67,8 +70,10 @@ frontend/
 │   ├── routes/
 │   │   ├── map/                    # Map view route (future)
 │   │   ├── list/
+│   │   │   ├── +page.server.ts     # Server load for recent resources
 │   │   │   └── +page.svelte        # List view page
 │   │   ├── add/
+│   │   │   ├── +page.server.ts     # Server action for resource creation
 │   │   │   └── +page.svelte        # Add resource page
 │   │   ├── offline/
 │   │   │   └── +page.svelte        # Offline queue page
@@ -134,7 +139,9 @@ frontend/
 ### Routes (Pages)
 - `frontend/src/routes/+page.svelte` - Map view (home)
 - `frontend/src/routes/list/+page.svelte` - List view + state component usage example
+- `frontend/src/routes/list/+page.server.ts` - Server load for recent resources
 - `frontend/src/routes/add/+page.svelte` - Add resource form
+- `frontend/src/routes/add/+page.server.ts` - Server action for creating resources
 - `frontend/src/routes/offline/+page.svelte` - Offline queue
 
 ### Stores
@@ -142,6 +149,10 @@ frontend/
 
 ### Utilities
 - `frontend/src/lib/utils/categories.ts` - Category labels and constants
+
+### Server Data Layer
+- `frontend/src/lib/server/supabase.ts` - Supabase server client setup
+- `frontend/src/lib/server/resources.ts` - Create/fetch resource data functions + validation
 
 ## Development Status
 

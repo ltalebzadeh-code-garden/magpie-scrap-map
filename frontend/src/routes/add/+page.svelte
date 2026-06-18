@@ -3,15 +3,36 @@
   import { isOnline } from '$lib/stores';
   import type { ResourceCategory, ResourceStatus } from '$lib/types';
 
-  let title = '';
-  let description = '';
-  let category: ResourceCategory = 'other';
-  let contactMethod = '';
+  type AddPageForm = {
+    success?: boolean;
+    message?: string;
+    created?: {
+      id: string;
+      title: string;
+    };
+    values?: {
+      title?: string;
+      description?: string;
+      category?: string;
+      status?: string;
+      latitude?: string;
+      longitude?: string;
+      contact_method?: string;
+    };
+    fieldErrors?: Record<string, string>;
+  };
 
-  function handleSubmit() {
-    console.log('Form submitted:', { title, description, category, contactMethod });
-    // TODO: Implement actual submission logic
-  }
+  let { form } = $props<{ form?: AddPageForm }>();
+
+  let title = $state(form?.values?.title ?? '');
+  let description = $state(form?.values?.description ?? '');
+  let category = $state<ResourceCategory>((form?.values?.category as ResourceCategory) ?? 'other');
+  let status = $state<ResourceStatus>((form?.values?.status as ResourceStatus) ?? 'available');
+  let latitude = $state(form?.values?.latitude ?? '');
+  let longitude = $state(form?.values?.longitude ?? '');
+  let contactMethod = $state(form?.values?.contact_method ?? '');
+
+  const fieldErrors = $derived(form?.fieldErrors ?? {});
 </script>
 
 <div class="add-page">
@@ -27,7 +48,21 @@
   {/if}
 
   <Card padding="large">
-    <form on:submit|preventDefault={handleSubmit}>
+    {#if form?.success && form?.created}
+      <div class="submit-result success-message">
+        <Badge variant="success">Created</Badge>
+        <p>
+          Resource <strong>{form.created.title}</strong> was created successfully.
+        </p>
+      </div>
+    {:else if form?.message}
+      <div class="submit-result error-message">
+        <Badge variant="error">Error</Badge>
+        <p>{form.message}</p>
+      </div>
+    {/if}
+
+    <form method="POST" action="?/create">
       <div class="form-group">
         <label for="title">Title <span class="required">*</span></label>
         <Input
@@ -38,6 +73,9 @@
           maxlength={100}
           bind:value={title}
         />
+        {#if fieldErrors.title}
+          <span class="field-error">{fieldErrors.title}</span>
+        {/if}
       </div>
 
       <div class="form-group">
@@ -48,15 +86,18 @@
           placeholder="Describe the resource, condition, quantity..."
           required
           rows={5}
-          maxlength={500}
+          maxlength={1000}
           bind:value={description}
         />
-        <span class="helper-text">{description.length}/500 characters</span>
+        <span class="helper-text">{description.length}/1000 characters</span>
+        {#if fieldErrors.description}
+          <span class="field-error">{fieldErrors.description}</span>
+        {/if}
       </div>
 
       <div class="form-group">
         <label for="category">Category <span class="required">*</span></label>
-        <select id="category" bind:value={category} class="select">
+        <select id="category" name="category" bind:value={category} class="select">
           <option value="scrap_metal">Scrap Metal</option>
           <option value="wood">Wood / Lumber</option>
           <option value="tools">Tools</option>
@@ -71,23 +112,86 @@
           <span class="preview-label">Preview:</span>
           <Badge {category} />
         </div>
+        {#if fieldErrors.category}
+          <span class="field-error">{fieldErrors.category}</span>
+        {/if}
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status <span class="required">*</span></label>
+        <select id="status" name="status" bind:value={status} class="select">
+          <option value="available">Available</option>
+          <option value="claimed">Claimed</option>
+          <option value="possibly_gone">Possibly Gone</option>
+          <option value="expired">Expired</option>
+        </select>
+        {#if fieldErrors.status}
+          <span class="field-error">{fieldErrors.status}</span>
+        {/if}
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="latitude">Latitude <span class="required">*</span></label>
+          <Input
+            id="latitude"
+            name="latitude"
+            type="number"
+            step="any"
+            min={-90}
+            max={90}
+            placeholder="e.g. 35.6892"
+            required
+            bind:value={latitude}
+          />
+          {#if fieldErrors.latitude}
+            <span class="field-error">{fieldErrors.latitude}</span>
+          {/if}
+        </div>
+
+        <div class="form-group">
+          <label for="longitude">Longitude <span class="required">*</span></label>
+          <Input
+            id="longitude"
+            name="longitude"
+            type="number"
+            step="any"
+            min={-180}
+            max={180}
+            placeholder="e.g. 51.3890"
+            required
+            bind:value={longitude}
+          />
+          {#if fieldErrors.longitude}
+            <span class="field-error">{fieldErrors.longitude}</span>
+          {/if}
+        </div>
       </div>
 
       <div class="form-group">
         <label for="contact">Contact Method (optional)</label>
         <Input
           id="contact"
-          name="contact"
+          name="contact_method"
           type="text"
           placeholder="Phone, address, or meeting point"
           maxlength={200}
           bind:value={contactMethod}
         />
         <span class="helper-text">How can people reach you?</span>
+        {#if fieldErrors.contact_method}
+          <span class="field-error">{fieldErrors.contact_method}</span>
+        {/if}
       </div>
 
       <div class="form-actions">
-        <Button type="submit" variant="primary" size="large" fullWidth disabled={!title || !description}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="large"
+          fullWidth
+          disabled={!title || !description || !latitude || !longitude}
+        >
           Add Resource
         </Button>
         <Button type="button" variant="ghost" size="medium" fullWidth on:click={() => history.back()}>
@@ -231,6 +335,41 @@
     color: #718096;
   }
 
+  .field-error {
+    font-size: 0.8125rem;
+    color: #c53030;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .submit-result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+  }
+
+  .submit-result p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+
+  .success-message {
+    background: #f0fff4;
+    border: 1px solid #9ae6b4;
+  }
+
+  .error-message {
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+  }
+
   .form-actions {
     display: flex;
     flex-direction: column;
@@ -283,6 +422,10 @@
   @media (max-width: 768px) {
     h1 {
       font-size: 1.5rem;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
     }
 
     .info-card {

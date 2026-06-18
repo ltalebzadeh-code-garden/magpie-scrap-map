@@ -3,5 +3,6 @@ export type {
   ResourceSummary,
   ResourceStatus,
   ResourceCategory,
-  LocationAccuracy
+  LocationAccuracy,
+  CreateResourceInput
 } from './resource';
