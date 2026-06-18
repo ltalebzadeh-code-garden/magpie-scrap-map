@@ -35,6 +35,13 @@ frontend/
 ├── src/
 │   ├── lib/
 │   │   ├── components/
+│   │   │   ├── ui/
+│   │   │   │   ├── Button.svelte       # Reusable button component
+│   │   │   │   ├── Input.svelte        # Text input component
+│   │   │   │   ├── Textarea.svelte     # Multi-line text input
+│   │   │   │   ├── Card.svelte         # Card container component
+│   │   │   │   ├── Badge.svelte        # Status/category badge component
+│   │   │   │   └── index.ts            # UI component exports
 │   │   │   ├── Header.svelte       # App header with title and status
 │   │   │   └── Nav.svelte          # Main navigation component
 │   │   ├── stores/
@@ -101,6 +108,14 @@ frontend/
   - `ResourceSummary` interface
   - `ResourceStatus`, `ResourceCategory`, `LocationAccuracy` types
 
+### UI Components
+- `frontend/src/lib/components/ui/Button.svelte` - Reusable button (primary, secondary, ghost)
+- `frontend/src/lib/components/ui/Input.svelte` - Text input with focus states
+- `frontend/src/lib/components/ui/Textarea.svelte` - Multi-line text input
+- `frontend/src/lib/components/ui/Card.svelte` - Container with padding variants
+- `frontend/src/lib/components/ui/Badge.svelte` - Status/category badges with auto-coloring
+- `frontend/src/lib/components/ui/index.ts` - Centralized UI exports
+
 ### Components
 - `frontend/src/lib/components/Header.svelte` - App header with online indicator
 - `frontend/src/lib/components/Nav.svelte` - Navigation tabs
@@ -132,4 +147,3 @@ frontend/
 - Row Level Security policies
 - Sample seed data
 - Backend documentation
-

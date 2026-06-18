@@ -94,6 +94,67 @@
 
 ## Current State
 
+### Day 2 - Mobile-First Layout Refinement (June 18, 2026)
+
+#### Refined App Shell for Mobile-First UX
+- **Bottom Navigation**: Moved `Nav.svelte` from top to bottom of layout
+- **Fixed Positioning**: Navigation now fixed at bottom with `z-index: 1000`
+- **Safe Area Support**: Added `env(safe-area-inset-bottom)` for devices with notches
+- **Comfortable Tap Targets**: Minimum 56px height on mobile, 60px on desktop
+- **No Content Overlap**: Main content has 5rem bottom padding for nav clearance
+- **Active Route Highlighting**: Clear visual indicator with top border and background tint
+- **Responsive Font Sizing**: Scales from 0.8125rem (small phones) to 0.9375rem (desktop)
+- **Touch Optimizations**: 
+  - Removed iOS tap highlight with `-webkit-tap-highlight-color: transparent`
+  - Added `:active` press feedback with subtle scale transform
+  - Smooth scrolling with `-webkit-overflow-scrolling: touch`
+- **Desktop Hover Support**: Uses `@media (hover: hover)` to avoid hover issues on touch devices
+- **Accessibility**: Added `aria-current="page"` for screen readers
+
+#### Layout Improvements
+- **Dynamic Viewport Height**: Uses `100dvh` for proper mobile browser height handling
+- **Scrollable Main Area**: Main content scrolls independently with touch-optimized overflow
+- **Flexible Desktop Layout**: Maintains centered max-width layout on larger screens
+
+### Day 2 - Reusable UI Components (June 18, 2026)
+
+#### Created UI Component Library
+- **New Directory**: `src/lib/components/ui/` for reusable UI primitives
+- **Button Component**: 
+  - Variants: primary, secondary, ghost
+  - Sizes: small, medium, large
+  - Full-width option
+  - Disabled state support
+  - Accessible focus styles
+- **Input Component**:
+  - Standard text input with multiple type support
+  - Focus states with blue border and shadow
+  - 16px font size on mobile (prevents iOS zoom)
+  - Placeholder and disabled state styling
+- **Textarea Component**:
+  - Multi-line text input
+  - Configurable rows and resize behavior
+  - Consistent styling with Input component
+- **Card Component**:
+  - Padding variants: none, small, medium, large
+  - Optional hover effect with elevation
+  - Clickable variant with press feedback
+  - Keyboard accessibility
+- **Badge Component**:
+  - Automatic status badge coloring (available, claimed, possibly_gone, expired)
+  - Category badge support with distinct colors per category
+  - Generic variants: info, warning, success, error
+  - Two sizes: small and medium
+  - Auto-displays labels for status/category types
+
+#### Updated Add Resource Page
+- Implemented working form using new UI components
+- Live character counter for description field
+- Category preview with Badge component
+- Offline notice with warning badge
+- Component showcase section demonstrating all variants
+- Form validation states
+
 ### What Works
 - ✅ SvelteKit dev server runs successfully
 - ✅ Navigation between all placeholder pages
@@ -105,8 +166,12 @@
 - ✅ PostGIS spatial search functions
 - ✅ Row Level Security policies configured
 - ✅ Sample seed data for testing
+- ✅ Mobile-first bottom navigation with fixed positioning
+- ✅ Comfortable tap targets and clear active states
+- ✅ Content padding prevents nav overlap
+- ✅ Reusable UI component library (Button, Input, Textarea, Card, Badge)
 
-### What's Next (Day 2)
+### What's Next
 - Backend connection with Supabase client
 - Install @supabase/supabase-js in frontend
 - Typed data access functions

@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-18) - Day 2: Mobile-First Layout
+
+#### Reusable UI Components
+- Created `src/lib/components/ui/` directory for UI primitives
+- Button component with primary, secondary, and ghost variants
+- Button sizes: small, medium, large with full-width option
+- Input component with focus states and mobile optimization
+- Textarea component with configurable rows and resize behavior
+- Card component with padding variants and hover effects
+- Badge component with automatic status and category coloring
+- Badge variants: status (available, claimed, possibly_gone, expired)
+- Badge variants: category (all 9 resource categories with distinct colors)
+- Badge variants: generic (info, warning, success, error)
+- Component exports via `ui/index.ts` for clean imports
+- Updated Add Resource page with functional form using UI components
+- Form validation, character counter, and category preview
+- Component showcase section demonstrating all variants
+
+#### Mobile-First Layout
+- Mobile-first bottom navigation pattern
+- Fixed positioning for navigation at bottom of viewport
+- Safe area inset support for devices with notches/home indicators
+- Comfortable tap targets (56px mobile, 60px desktop minimum)
+- Clear active route highlighting with top border and background tint
+- Content padding to prevent navigation overlap
+- Touch-optimized scrolling with `-webkit-overflow-scrolling`
+- Responsive font sizing across device sizes
+- Desktop hover support with `@media (hover: hover)`
+- Accessibility improvements with `aria-current` attributes
+
 ### Added (2026-06-16)
 - Complete Supabase database schema with PostGIS extension
 - Initial migration: `resources` table with full constraints and validation
