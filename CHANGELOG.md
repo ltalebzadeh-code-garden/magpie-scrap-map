@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 
 ### Added (2026-06-19)
 
+#### Map View with Leaflet
+- Installed Leaflet v1.9.4 and TypeScript types
+- Added Leaflet CSS to `frontend/src/app.html` for proper tile and control rendering
+- Created SSR-safe `ResourceMap.svelte` component in `frontend/src/lib/components/`
+  - Uses dynamic import to avoid SSR `window`/`document` errors
+  - Supports configurable center and zoom via Svelte 5 `$props()` runes
+  - Automatic cleanup of map instance on component destroy
+  - Responsive styling with mobile-first approach
+- Integrated map into home page (`frontend/src/routes/+page.svelte`)
+- OpenStreetMap tile layer with proper attribution
+
 #### Resource Status Update Flow + MVP RLS Hardening
 - Added focused status update input type: `UpdateResourceStatusInput`
   - file: `frontend/src/lib/types/resource.ts`
@@ -148,4 +159,3 @@ All notable changes to this project will be documented in this file.
 - TypeScript v6.0.3
 - PostgreSQL with PostGIS (via Supabase)
 - Database migrations in `supabase/migrations/`
-

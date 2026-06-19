@@ -33,6 +33,8 @@
 		"vite": "^8.0.16"
 	},
 	"dependencies": {
-		"@supabase/supabase-js": "^2.108.2"
+		"@supabase/supabase-js": "^2.108.2",
+		"@types/leaflet": "^1.9.21",
+		"leaflet": "^1.9.4"
 	}
 }

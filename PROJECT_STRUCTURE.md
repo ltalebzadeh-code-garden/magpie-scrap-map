@@ -48,6 +48,7 @@ frontend/
 │   │   │   │   ├── Card.svelte         # Card container component
 │   │   │   │   ├── Badge.svelte        # Status/category badge component
 │   │   │   │   └── index.ts            # UI component exports
+│   │   │   ├── ResourceMap.svelte  # SSR-safe Leaflet map component
 │   │   │   ├── Header.svelte       # App header with title and status
 │   │   │   ├── OfflineBanner.svelte # Connectivity banner shown when offline
 │   │   │   └── Nav.svelte          # Main navigation component

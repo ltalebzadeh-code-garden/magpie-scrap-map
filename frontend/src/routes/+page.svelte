@@ -1,37 +1,40 @@
 <script lang="ts">
   import { isOnline } from '$lib/stores';
+  import ResourceMap from '$lib/components/ResourceMap.svelte';
 </script>
 
 <div class="page-container">
-  <div class="surface-card surface-card--center placeholder-card">
-    <h2>Map View</h2>
-    <div class="placeholder-content section-stack">
-      <p>📍 Interactive map will be displayed here</p>
-      <p>Shows nearby resources with markers and popups</p>
-      {#if !$isOnline}
-        <p class="state-note state-note--danger">⚠️ Map tiles may not load while offline</p>
-      {/if}
-    </div>
+  <div class="map-wrapper">
+    {#if !$isOnline}
+      <div class="offline-warning">⚠️ Map tiles may not load while offline</div>
+    {/if}
+    <ResourceMap center={[51.505, -0.09]} zoom={13} />
   </div>
 </div>
 
 <style>
-  .placeholder-card {
-    padding: var(--space-8);
+  .page-container {
+    height: calc(100vh - 120px);
+    padding: 0;
   }
 
-  h2 {
-    margin-top: 0;
-    margin-bottom: var(--space-3);
-    color: var(--color-text);
+  .map-wrapper {
+    height: 100%;
+    width: 100%;
+    position: relative;
   }
 
-  .placeholder-content {
-    color: var(--color-muted);
-    line-height: var(--line-copy);
-  }
-
-  .placeholder-content p {
-    margin: 0;
+  .offline-warning {
+    position: absolute;
+    top: var(--space-4);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: var(--color-danger);
+    color: white;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    box-shadow: var(--shadow-sm);
   }
 </style>
