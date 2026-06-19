@@ -59,6 +59,7 @@ frontend/
 │   │   │   ├── resource.ts         # Resource type definitions
 │   │   │   └── index.ts            # Type exports
 │   │   ├── utils/
+│   │   │   ├── time.ts             # Time formatting and HTML escaping utilities
 │   │   │   ├── categories.ts       # Category labels and lists
 │   │   │   └── index.ts            # Utility exports
 │   │   ├── server/

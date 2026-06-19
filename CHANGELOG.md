@@ -26,6 +26,31 @@ All notable changes to this project will be documented in this file.
   - Reactive marker updates using Svelte 5 `$effect` rune
   - Marker layer cleanup to prevent duplicates on re-render
   - Graceful handling of empty resource arrays
+- Added marker popups with resource details:
+  - Created `frontend/src/lib/utils/time.ts` with time formatting helpers
+  - `formatRelativeTime()` displays human-readable age (e.g., "just now", "5 minutes ago", "2 days ago")
+  - `escapeHtml()` sanitizes user content to prevent XSS attacks
+  - Popup displays title (escaped), category, status, and age
+  - "View Details" button links to list page (no detail route exists yet)
+  - Inline styles for popup content (Leaflet requires HTML strings)
+  - Status and category labels reuse existing label mappings
+  - Popups bound to each marker via Leaflet `bindPopup()`
+  - Export new utilities from `frontend/src/lib/utils/index.ts`
+- Added user-triggered geolocation feature:
+  - "My Location" button positioned in top-right corner of map
+  - Geolocation only requested when user clicks button (not on page load)
+  - Loading state with spinner while requesting location
+  - Centers map on user's coordinates (zoom level 15)
+  - Blue circle marker for user location with "You are here" popup
+  - Removes previous user marker on repeated clicks (no duplicates)
+  - Comprehensive error handling:
+    - Permission denied
+    - Location unavailable
+    - Request timeout (10 seconds)
+    - Browser not supported
+  - Dismissible error message banner at bottom of map
+  - Battery-friendly geolocation options (enableHighAccuracy: false)
+  - Map remains fully functional if geolocation fails
 
 #### Resource Status Update Flow + MVP RLS Hardening
 - Added focused status update input type: `UpdateResourceStatusInput`

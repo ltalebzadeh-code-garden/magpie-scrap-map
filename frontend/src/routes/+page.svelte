@@ -16,8 +16,12 @@
 
 <style>
   .page-container {
-    height: calc(100vh - 120px);
-    padding: 0;
+    /* Full height minus header and bottom nav, account for main padding */
+    height: 100%;
+    margin: calc(var(--space-3) * -1) calc(var(--space-3) * -1) calc(var(--space-3) * -1 - 5rem) calc(var(--space-3) * -1);
+    border: 3px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
   }
 
   .map-wrapper {
@@ -38,5 +42,13 @@
     border-radius: var(--radius-md);
     font-size: var(--text-sm);
     box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 769px) {
+    .page-container {
+      /* Desktop: no extra bottom margin needed */
+      margin: calc(var(--space-6) * -1);
+      border-width: 2px;
+    }
   }
 </style>
