@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Added (2026-06-19)
+### Added (2026-06-20)
 
 #### Map View with Leaflet
 - Installed Leaflet v1.9.4 and TypeScript types
@@ -16,6 +16,16 @@ All notable changes to this project will be documented in this file.
   - Responsive styling with mobile-first approach
 - Integrated map into home page (`frontend/src/routes/+page.svelte`)
 - OpenStreetMap tile layer with proper attribution
+- Added resource marker rendering:
+  - Created `frontend/src/routes/+page.server.ts` to load resources from database
+  - ResourceMap component now accepts `resources` prop
+  - Markers render for all resources with valid coordinates
+  - Automatic coordinate validation (latitude: -90 to 90, longitude: -180 to 180)
+  - Skips resources with missing, null, or invalid coordinates
+  - Automatic map bounds fitting when markers exist
+  - Reactive marker updates using Svelte 5 `$effect` rune
+  - Marker layer cleanup to prevent duplicates on re-render
+  - Graceful handling of empty resource arrays
 
 #### Resource Status Update Flow + MVP RLS Hardening
 - Added focused status update input type: `UpdateResourceStatusInput`

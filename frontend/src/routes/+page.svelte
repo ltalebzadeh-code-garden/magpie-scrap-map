@@ -1,6 +1,8 @@
 <script lang="ts">
   import { isOnline } from '$lib/stores';
   import ResourceMap from '$lib/components/ResourceMap.svelte';
+
+  let { data } = $props();
 </script>
 
 <div class="page-container">
@@ -8,7 +10,7 @@
     {#if !$isOnline}
       <div class="offline-warning">⚠️ Map tiles may not load while offline</div>
     {/if}
-    <ResourceMap center={[51.505, -0.09]} zoom={13} />
+    <ResourceMap resources={data.resources} />
   </div>
 </div>
 

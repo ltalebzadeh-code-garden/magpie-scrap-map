@@ -80,7 +80,8 @@ frontend/
 │   │   ├── offline/
 │   │   │   └── +page.svelte        # Offline queue page
 │   │   ├── +layout.svelte          # Root layout with header/nav
-│   │   └── +page.svelte            # Home page (map view)
+│   │   ├── +page.svelte            # Home page (map view)
+│   │   └── +page.server.ts         # Server load for map resources
 │   ├── app.html                    # HTML template
 │   └── app.d.ts                    # App-level TypeScript definitions
 ├── static/                         # Static assets
