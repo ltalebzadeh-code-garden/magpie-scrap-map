@@ -100,6 +100,7 @@ The MVP answers one core question:
 - AI classification
 - full offline tile packs
 - end-to-end encrypted messaging
+- rate-limit or anti-spam behaviour
 - complex moderation tools
 - reporting flows
 

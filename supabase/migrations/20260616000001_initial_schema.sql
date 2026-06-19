@@ -110,6 +110,10 @@ CREATE INDEX idx_resources_expires_at ON resources (expires_at)
 
 -- Enable Row Level Security
 ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
+-- Allow API roles to access the schema
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+-- Allow reads/inserts for MVP
+GRANT SELECT, INSERT ON TABLE public.resources TO anon, authenticated;
 
 -- Policy: Anyone can read non-expired resources
 CREATE POLICY "Public read access for active resources"

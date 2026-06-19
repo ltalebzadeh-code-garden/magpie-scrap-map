@@ -17,8 +17,12 @@
 -- - Require a lightweight ownership token (e.g., hashed device token) in the
 --   function and verify row ownership before allowing status updates.
 
--- Ensure RLS is enabled (idempotent)
+-- Enable Row Level Security
 ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
+-- Allow API roles to access the schema
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+-- Allow reads/inserts for MVP
+GRANT SELECT, INSERT ON TABLE public.resources TO anon, authenticated;
 
 -- Replace previously broad/implicit policies with minimal explicit ones
 DROP POLICY IF EXISTS "Public read access for active resources" ON resources;
