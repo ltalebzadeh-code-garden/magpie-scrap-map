@@ -2,12 +2,13 @@
   import { Badge, Button, Card, Input } from '$lib/components/ui';
   import { ErrorState, LoadingState } from '$lib/components/states';
   import { categoryLabels, categoryList } from '$lib/utils';
-  import {
-    createNearbySearchController,
-    nearbyRadiusOptions,
-    nearbyStatusOptions,
-    formatDistance
-  } from '$lib/stores/nearby-search';
+import {
+  createNearbySearchController,
+  nearbyRadiusOptions,
+  nearbyStatusOptions,
+  nearbySortOptions,
+  formatDistance
+} from '$lib/stores/nearby-search';
   import type { NearbyResource } from '$lib/types';
 
   type ListPageData = {
@@ -22,6 +23,7 @@
       selectedRadius,
       selectedCategory,
       selectedStatus,
+      selectedSort,
       searchLatitude,
       searchLongitude,
       locationError,
@@ -147,10 +149,23 @@
           {/each}
         </select>
       </label>
+
+      <label>
+        <span>Sort by</span>
+        <select bind:value={$selectedSort}>
+          {#each nearbySortOptions as option}
+            <option value={option.value}>{option.label}</option>
+          {/each}
+        </select>
+      </label>
     </div>
 
     <div class="actions-row">
-      <Button type="button" on:click={fetchNearby} disabled={$isLoadingNearby || !$searchLatitude || !$searchLongitude}>
+      <Button
+        type="button"
+        on:click={fetchNearby}
+        disabled={$isLoadingNearby || $searchLatitude == null || $searchLongitude == null}
+      >
         {$isLoadingNearby ? 'Searching…' : 'Search nearby'}
       </Button>
     </div>
@@ -174,7 +189,13 @@
       <p class="list-hint">Showing recent resources. Pick a location and radius to search nearby.</p>
     {/if}
 
-    {#if $primaryCount === 0 && !$isLoadingNearby}
+    {#if $isLoadingNearby}
+      <LoadingState message="Loading nearby resources…" />
+    {:else if $nearbyError}
+      <ErrorState message={$nearbyError} onRetry={fetchNearby} />
+    {:else if $showEmptyNearby}
+      <p class="empty-state">No nearby resources match these filters.</p>
+    {:else if $primaryCount === 0}
       <p class="empty-state">No resources available yet.</p>
     {:else}
       <ul class="resource-list">

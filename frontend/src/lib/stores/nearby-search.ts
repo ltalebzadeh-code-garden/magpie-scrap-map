@@ -25,6 +25,13 @@ export const nearbyRadiusOptions = [
   { label: '20 km', value: 20000 }
 ] as const;
 
+export type NearbySortOption = 'nearest' | 'newest';
+
+export const nearbySortOptions = [
+  { label: 'Nearest first', value: 'nearest' satisfies NearbySortOption },
+  { label: 'Newest first', value: 'newest' satisfies NearbySortOption }
+] as const;
+
 export const nearbyStatusOptions: ResourceStatus[] = ['available', 'claimed', 'possibly_gone', 'expired'];
 
 export function formatDistance(meters?: number | null) {
@@ -45,6 +52,7 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
   const selectedRadius = writable<number>(nearbyRadiusOptions[1]?.value ?? 5000);
   const selectedCategory = writable<ResourceCategory | ''>('');
   const selectedStatus = writable<ResourceStatus | ''>('');
+  const selectedSort = writable<NearbySortOption>('nearest');
   const searchLatitude = writable<number | null>(null);
   const searchLongitude = writable<number | null>(null);
   const locationError = writable<string | null>(null);
@@ -55,7 +63,17 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
 
   const primaryResources = derived(nearbyResources, ($nearby) => $nearby ?? initialResources);
 
-  const listItems = derived(primaryResources, ($resources) =>
+  const orderedResources = derived([primaryResources, selectedSort], ([$resources, $sort]) => {
+    if ($sort === 'nearest') {
+      return $resources;
+    }
+
+    return [...$resources].sort(
+      (a, b) => new Date(b.created_at).valueOf() - new Date(a.created_at).valueOf()
+    );
+  });
+
+  const listItems = derived(orderedResources, ($resources) =>
     $resources.map((resource) => ({
       id: resource.id,
       title: resource.title,
@@ -161,11 +179,13 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
       selectedRadius,
       selectedCategory,
       selectedStatus,
+      selectedSort,
       searchLatitude,
       searchLongitude,
       locationError,
       nearbyResources,
       primaryResources,
+      orderedResources,
       listItems,
       isLoadingNearby,
       nearbyError,
