@@ -188,6 +188,69 @@ export async function fetchRecentResources(limit = 20): Promise<ServiceResult<Re
   };
 }
 
+export async function fetchResourceById(id: string): Promise<ServiceResult<Resource>> {
+  const supabase = getSupabaseClient();
+
+  const resourceId = id?.trim() || '';
+
+  if (!resourceId) {
+    return {
+      ok: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Resource id is required.',
+        fieldErrors: {
+          id: 'Resource id is required.'
+        }
+      }
+    };
+  }
+
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(resourceId)) {
+    return {
+      ok: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Resource id must be a valid UUID.',
+        fieldErrors: {
+          id: 'Resource id must be a valid UUID.'
+        }
+      }
+    };
+  }
+
+  const { data, error } = await supabase
+    .from('resources')
+    .select('*')
+    .eq('id', resourceId)
+    .maybeSingle<DbResourceRow>();
+
+  if (error) {
+    return {
+      ok: false,
+      error: {
+        code: 'DATABASE_ERROR',
+        message: error.message || 'Failed to fetch resource details.'
+      }
+    };
+  }
+
+  if (!data) {
+    return {
+      ok: false,
+      error: {
+        code: 'DATABASE_ERROR',
+        message: 'Resource not found.'
+      }
+    };
+  }
+
+  return {
+    ok: true,
+    data: mapDbResourceToApp(data)
+  };
+}
+
 export async function searchNearbyResources(
   params: SearchNearbyParams
 ): Promise<ServiceResult<NearbyResource[]>> {

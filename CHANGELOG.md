@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 ### Added (2026-06-22)
 
+#### Add-resource end-to-end create flow completion (photo + success + detail redirect)
+- Completed existing `/add` flow end-to-end without introducing duplicate create paths.
+- Extended `frontend/src/routes/add/+page.server.ts` existing `create` action to support optional photo upload:
+  - Reuses existing server Supabase client (`getSupabaseClient`)
+  - Uploads optional file to `resource-photos` bucket
+  - Stores public URL as `photo_url` in existing `createResource` payload
+  - Adds server-side file safety checks (JPG/PNG/WebP, max 5MB)
+- Updated `frontend/src/routes/add/+page.svelte`:
+  - Enables multipart form submission for optional photo
+  - Replaces photo placeholder with functional file input
+  - Adds submit-state UX (`Creating resource…`, `Redirecting to details…`)
+  - Adds success transition that navigates to `/resource/[id]` when created id exists
+  - Keeps failure path user-friendly and preserves submitted values via existing form state
+- Added resource detail route for redirect destination:
+  - `frontend/src/routes/resource/[id]/+page.server.ts` (loads by id via existing `fetchResourceById`)
+  - `frontend/src/routes/resource/[id]/+page.svelte` (renders resource data including optional photo)
+- Location compatibility note:
+  - Manual mode remains schema-compatible by requiring approximate center coordinates and persisting `location_accuracy = 'area_only'`.
+
 #### Add-resource location selection + validation
 - Extended existing `/add` route form (no duplicate flow) with usable location selection methods:
   - GPS current-location capture (reusing `frontend/src/lib/utils/geolocation.ts`)

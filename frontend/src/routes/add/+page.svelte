@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
   import { Button, Input, Textarea, Card, Badge } from '$lib/components/ui';
   import { isOnline } from '$lib/stores';
   import { getLocation, getLocationErrorMessage } from '$lib/utils/geolocation';
@@ -26,6 +27,7 @@
       location_method?: string;
       manual_area?: string;
       location_accuracy?: string;
+      photo_url?: string;
     };
     fieldErrors?: Record<string, string>;
   };
@@ -47,6 +49,9 @@
 
   let locationMessage = $state('');
   let locationState = $state<LocationUiState>('idle');
+  let isSubmitting = $state(false);
+  let isRedirecting = $state(false);
+  let photoName = $state('');
 
   let mapContainer: HTMLDivElement | null = null;
   let leaflet: typeof import('leaflet') | null = null;
@@ -74,6 +79,23 @@
   );
 
   const canSubmit = $derived(Boolean(title.trim()) && Boolean(description.trim()) && hasValidLocation);
+
+  $effect(() => {
+    if (!form?.success || !form?.created?.id) {
+      return;
+    }
+
+    isSubmitting = false;
+    isRedirecting = true;
+
+    const timeout = setTimeout(() => {
+      goto(`/resource/${form.created!.id}`);
+    }, 900);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  });
 
   async function requestGpsLocation() {
     locationState = 'loading';
@@ -202,6 +224,17 @@
       map = null;
     }
   });
+
+  function handleSubmit() {
+    isSubmitting = true;
+    isRedirecting = false;
+  }
+
+  function handlePhotoChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    photoName = file?.name ?? '';
+  }
 </script>
 
 <div class="add-page">
@@ -231,7 +264,7 @@
       </div>
     {/if}
 
-    <form method="POST" action="?/create">
+    <form method="POST" action="?/create" enctype="multipart/form-data" onsubmit={handleSubmit}>
       <div class="form-group">
         <label for="title">Title <span class="required">*</span></label>
         <Input
@@ -444,12 +477,23 @@
         <p class="section-description">
           Add a photo to help others identify the resource. Photos are optional but recommended.
         </p>
-        
+
         <div class="photo-picker-placeholder">
-          <div class="placeholder-content">
-            <p>📷 Photo upload will be implemented here</p>
-            <p class="placeholder-hint">Will support camera capture and file upload</p>
-            <p class="placeholder-hint">Images will be resized and stored in Supabase Storage</p>
+          <div class="location-mode-body">
+            <label for="photo">Choose image (JPG, PNG, or WebP, up to 5MB)</label>
+            <Input
+              id="photo"
+              name="photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onchange={handlePhotoChange}
+            />
+            <p class="helper-text">
+              {photoName ? `Selected: ${photoName}` : 'No file selected. You can submit without a photo.'}
+            </p>
+            {#if fieldErrors.photo}
+              <span class="field-error">{fieldErrors.photo}</span>
+            {/if}
           </div>
         </div>
       </div>
@@ -475,14 +519,27 @@
           variant="primary"
           size="large"
           fullWidth
-          disabled={!canSubmit}
+          disabled={!canSubmit || isSubmitting || isRedirecting}
         >
-          Add Resource
+          {#if isSubmitting}
+            Creating resource…
+          {:else if isRedirecting}
+            Redirecting to details…
+          {:else}
+            Add Resource
+          {/if}
         </Button>
-        <Button type="button" variant="ghost" size="medium" fullWidth on:click={() => history.back()}>
+        <Button type="button" variant="ghost" size="medium" fullWidth on:click={() => history.back()} disabled={isSubmitting || isRedirecting}>
           Cancel
         </Button>
       </div>
+
+      {#if form?.success && form?.created?.id}
+        <div class="submit-result success-message">
+          <p>Opening resource details…</p>
+          <a class="detail-link" href={`/resource/${form.created.id}`}>Go now</a>
+        </div>
+      {/if}
     </form>
   </Card>
 </div>
@@ -725,6 +782,14 @@
   .submit-result p {
     margin: 0;
     font-size: 0.875rem;
+  }
+
+  .detail-link {
+    display: inline-flex;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #2b6cb0;
+    text-decoration: underline;
   }
 
   .success-message {
