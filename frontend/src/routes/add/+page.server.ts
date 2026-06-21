@@ -1,7 +1,12 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { createResource } from '$lib/server/resources';
-import type { CreateResourceInput, ResourceCategory, ResourceStatus } from '$lib/types';
+import type {
+  CreateResourceInput,
+  LocationAccuracy,
+  ResourceCategory,
+  ResourceStatus
+} from '$lib/types';
 
 function toNumber(value: FormDataEntryValue | null): number {
   if (typeof value !== 'string') {
@@ -22,8 +27,47 @@ export const actions: Actions = {
       status: String(formData.get('status') ?? 'available'),
       latitude: String(formData.get('latitude') ?? ''),
       longitude: String(formData.get('longitude') ?? ''),
-      contact_method: String(formData.get('contact_method') ?? '')
+      contact_method: String(formData.get('contact_method') ?? ''),
+      location_method: String(formData.get('location_method') ?? 'gps'),
+      manual_area: String(formData.get('manual_area') ?? ''),
+      location_accuracy: String(formData.get('location_accuracy') ?? 'approximate')
     };
+
+    const locationMethod = values.location_method;
+    const manualArea = values.manual_area.trim();
+
+    const fieldErrors: Record<string, string> = {};
+
+    if (!['gps', 'map', 'manual'].includes(locationMethod)) {
+      fieldErrors.location = 'Please choose a valid location method.';
+    }
+
+    if (locationMethod === 'manual' && !manualArea) {
+      fieldErrors.manual_area = 'Please enter an approximate area for manual location.';
+    }
+
+    if (
+      !Number.isFinite(toNumber(formData.get('latitude'))) ||
+      !Number.isFinite(toNumber(formData.get('longitude')))
+    ) {
+      fieldErrors.location = 'Please set a valid location before submitting.';
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return fail(400, {
+        success: false,
+        message: 'Please fix the highlighted fields and try again.',
+        fieldErrors,
+        values
+      });
+    }
+
+    const locationAccuracy: LocationAccuracy =
+      locationMethod === 'manual'
+        ? 'area_only'
+        : values.location_accuracy === 'exact' || values.location_accuracy === 'approximate'
+          ? values.location_accuracy
+          : 'exact';
 
     const payload: CreateResourceInput = {
       title: values.title,
@@ -33,7 +77,7 @@ export const actions: Actions = {
       latitude: toNumber(formData.get('latitude')),
       longitude: toNumber(formData.get('longitude')),
       contact_method: values.contact_method || undefined,
-      location_accuracy: 'approximate'
+      location_accuracy: locationAccuracy
     };
 
     const result = await createResource(payload);
@@ -62,7 +106,10 @@ export const actions: Actions = {
         status: 'available',
         latitude: '',
         longitude: '',
-        contact_method: ''
+        contact_method: '',
+        location_method: 'gps',
+        manual_area: '',
+        location_accuracy: 'approximate'
       }
     };
   }

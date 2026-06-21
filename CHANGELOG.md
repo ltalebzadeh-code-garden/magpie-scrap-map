@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-22)
+
+#### Add-resource location selection + validation
+- Extended existing `/add` route form (no duplicate flow) with usable location selection methods:
+  - GPS current-location capture (reusing `frontend/src/lib/utils/geolocation.ts`)
+  - Interactive map pin drop (Leaflet, click-to-set marker)
+  - Manual approximate area input with approximate center coordinates
+- Added unified location form state metadata in the existing form submission:
+  - `location_method` (`gps` | `map` | `manual`)
+  - `location_accuracy` (`exact` for GPS/map, `area_only` for manual)
+  - `manual_area` (required for manual mode)
+- Added explicit UX feedback for active location method and location readiness
+- Added method-switch reset handling to avoid mixed stale state between GPS/map/manual
+- Added server action pre-validation for location method + manual area and user-friendly field errors
+- Preserved existing backend createResource/Supabase insertion path (no new APIs)
+
+#### Add-resource form foundation
+- Audited existing `/add` route and found solid implementation already in place
+- Enhanced location section with method picker (GPS/Map/Manual) with visual feedback
+- Added location picker placeholder structure for Part 2 implementation
+- Added photo upload section placeholder for Part 2 implementation
+- Removed component examples section to keep form focused
+- Preserved all existing validation, server action, and Supabase integration
+- Form ready for Part 2 (location pickers) and Part 3 (photo upload + redirect)
+
 ### Added (2026-06-21)
 
 #### IndexedDB caching and freshness display for nearby search
