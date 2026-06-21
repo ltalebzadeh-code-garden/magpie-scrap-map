@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-21)
+
+#### Location-aware nearby search UI
+- Added `/api/nearby` endpoint to proxy the PostGIS RPC with consistent validation responses (`frontend/src/routes/api/nearby/+server.ts`)
+- Enhanced home map/list page (`frontend/src/routes/+page.svelte`) with nearby search controls:
+  - Reuses existing category/status filters and adds required radius selector (1 km / 5 km / 20 km)
+  - Supports both "Use my location" (browser geolocation) and manual coordinate input workflows with validation
+  - Calls the nearby RPC via fetch and shares loading/error/empty states between map and list panels
+  - Map markers (ResourceMap) and list now render the same nearby dataset, including distance text when available, while falling back to recent resources if no location search is active
+- Wired helper exports so UI can access geolocation utilities via `$lib/utils`
+
+#### Nearby search desktop polish
+- Refined `/src/routes/+page.svelte` layout so the nearby filter panel sits beside the map on desktop instead of overlapping it
+- Ensured the map keeps a stable minimum height on wide screens and cards use scroll-friendly spacing
+- Maintained the existing mobile-first stack while improving spacing/padding consistency
+
+#### Nearby Search TypeScript Layer
+- Added `NearbyResource` interface to `frontend/src/lib/types/resource.ts` — compact result type including `distance_meters`, all list/map display fields, excludes `device_id_hash`
+- Added `SearchNearbyParams` interface to `frontend/src/lib/types/resource.ts` — accepts `latitude`, `longitude`, `radius_meters`, optional `category`, `status`, and `limit`
+- Exported both types from `frontend/src/lib/types/index.ts`
+- Added `searchNearbyResources()` to `frontend/src/lib/server/resources.ts`:
+  - Validates params (coordinate bounds, positive radius)
+  - Translates app category values to DB category values via existing `appToDbCategory` map
+  - Calls `search_nearby_resources` Supabase RPC with all filter params
+  - Maps DB rows back to app types via `dbToAppCategory` and returns typed `NearbyResource[]`
+
 ### Added (2026-06-20)
 
 #### Map View with Leaflet

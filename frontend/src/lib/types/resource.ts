@@ -57,3 +57,30 @@ export interface UpdateResourceStatusInput {
   id: string;
   status: ResourceStatus;
 }
+
+/** Compact result row returned by the search_nearby_resources RPC. */
+export interface NearbyResource {
+  id: string;
+  title: string;
+  description: string;
+  category: ResourceCategory;
+  status: ResourceStatus;
+  latitude: number;
+  longitude: number;
+  location_accuracy: LocationAccuracy;
+  contact_method?: string;
+  photo_url?: string;
+  created_at: string;
+  updated_at: string;
+  expires_at?: string;
+  distance_meters: number;
+}
+
+export interface SearchNearbyParams {
+  latitude: number;
+  longitude: number;
+  radius_meters: number;
+  category?: ResourceCategory;
+  status?: ResourceStatus;
+  limit?: number;
+}

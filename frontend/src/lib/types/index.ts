@@ -1,6 +1,8 @@
 export type {
   Resource,
   ResourceSummary,
+  NearbyResource,
+  SearchNearbyParams,
   ResourceStatus,
   ResourceCategory,
   LocationAccuracy,

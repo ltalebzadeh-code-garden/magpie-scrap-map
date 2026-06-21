@@ -1,9 +1,11 @@
 import type {
   CreateResourceInput,
+  NearbyResource,
   Resource,
   ResourceCategory,
   ResourceStatus,
   ResourceSummary,
+  SearchNearbyParams,
   UpdateResourceStatusInput
 } from '$lib/types';
 import { categoryList } from '$lib/utils';
@@ -91,6 +93,23 @@ type DbResourceSummaryRow = {
   created_at: string;
 };
 
+type DbNearbyRow = {
+  id: string;
+  title: string;
+  description: string;
+  category: DbResourceCategory;
+  status: ResourceStatus;
+  latitude: number;
+  longitude: number;
+  location_accuracy: 'exact' | 'approximate' | 'area_only';
+  contact_method: string | null;
+  photo_url: string | null;
+  created_at: string;
+  updated_at: string;
+  expires_at: string | null;
+  distance_meters: number;
+};
+
 export async function createResource(input: CreateResourceInput): Promise<ServiceResult<Resource>> {
   const supabase = getSupabaseClient();
 
@@ -165,6 +184,76 @@ export async function fetchRecentResources(limit = 20): Promise<ServiceResult<Re
       latitude: row.latitude,
       longitude: row.longitude,
       created_at: row.created_at
+    }))
+  };
+}
+
+export async function searchNearbyResources(
+  params: SearchNearbyParams
+): Promise<ServiceResult<NearbyResource[]>> {
+  const supabase = getSupabaseClient();
+
+  const fieldErrors: Record<string, string> = {};
+
+  if (!Number.isFinite(params.latitude) || params.latitude < -90 || params.latitude > 90) {
+    fieldErrors.latitude = 'Latitude must be between -90 and 90.';
+  }
+  if (!Number.isFinite(params.longitude) || params.longitude < -180 || params.longitude > 180) {
+    fieldErrors.longitude = 'Longitude must be between -180 and 180.';
+  }
+  if (!Number.isFinite(params.radius_meters) || params.radius_meters <= 0) {
+    fieldErrors.radius_meters = 'Radius must be a positive number.';
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return {
+      ok: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid search parameters.',
+        fieldErrors
+      }
+    };
+  }
+
+  const safeLimit = Number.isFinite(params.limit) ? Math.max(1, Math.min(params.limit!, 200)) : 100;
+  const dbCategory = params.category ? appToDbCategory[params.category] : null;
+
+  const { data, error } = await (supabase as any).rpc('search_nearby_resources', {
+    search_lat: params.latitude,
+    search_lon: params.longitude,
+    radius_meters: params.radius_meters,
+    filter_category: dbCategory ?? null,
+    filter_status: params.status ?? null,
+    result_limit: safeLimit
+  });
+
+  if (error) {
+    return {
+      ok: false,
+      error: { code: 'DATABASE_ERROR', message: error.message || 'Nearby search failed.' }
+    };
+  }
+
+  const rows: DbNearbyRow[] = (data ?? []) as DbNearbyRow[];
+
+  return {
+    ok: true,
+    data: rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      category: dbToAppCategory[row.category],
+      status: row.status,
+      latitude: row.latitude,
+      longitude: row.longitude,
+      location_accuracy: row.location_accuracy,
+      contact_method: row.contact_method ?? undefined,
+      photo_url: row.photo_url ?? undefined,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      expires_at: row.expires_at ?? undefined,
+      distance_meters: row.distance_meters
     }))
   };
 }
