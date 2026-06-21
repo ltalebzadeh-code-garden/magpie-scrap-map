@@ -29,7 +29,8 @@
       hasAttemptedNearby,
       showEmptyNearby,
       resultsBadgeLabel,
-      primaryCount
+      primaryCount,
+      isUsingCachedData
     },
     actions: { requestLocation, fetchNearby, clearNearby, setCoordinates }
   } = createNearbySearchController(data.resources);
@@ -158,7 +159,13 @@
         {#if $isLoadingNearby}
           <LoadingState message="Searching nearby resources…" />
         {:else if $nearbyError}
-          <ErrorState message={$nearbyError} onRetry={fetchNearby} />
+          {#if $isUsingCachedData}
+            <div class="cache-notice">
+              <p>⚠️ {$nearbyError}</p>
+            </div>
+          {:else}
+            <ErrorState message={$nearbyError} onRetry={fetchNearby} />
+          {/if}
         {:else if $showEmptyNearby}
           <p class="empty-message">No resources found within this radius. Try a larger radius or different filters.</p>
         {/if}
@@ -172,6 +179,8 @@
 
         {#if !$hasAttemptedNearby}
           <p class="list-hint">Showing recent resources. Set a location to search nearby instead.</p>
+        {:else if $isUsingCachedData}
+          <p class="cache-hint">📦 Showing cached results (up to 10 minutes old).</p>
         {/if}
 
         {#if $primaryCount === 0 && !$isLoadingNearby}
@@ -391,6 +400,25 @@
     margin: 0;
     color: var(--color-muted);
     font-size: 0.9rem;
+  }
+
+  .cache-hint {
+    margin: 0;
+    color: var(--color-primary);
+    font-size: 0.875rem;
+  }
+
+  .cache-notice {
+    padding: var(--space-2);
+    background: var(--color-warning-bg, #fef3c7);
+    border: 1px solid var(--color-warning, #f59e0b);
+    border-radius: var(--radius-md);
+  }
+
+  .cache-notice p {
+    margin: 0;
+    color: var(--color-warning-text, #78350f);
+    font-size: 0.875rem;
   }
 
   @media (min-width: 960px) {

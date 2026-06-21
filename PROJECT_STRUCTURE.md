@@ -151,9 +151,11 @@ frontend/
 
 ### Stores
 - `frontend/src/lib/stores/online.ts` - Online/offline state detection
+- `frontend/src/lib/stores/nearby-search.ts` - Nearby search controller with shared state, filters, sorting, and cache integration
 
 ### Utilities
 - `frontend/src/lib/utils/categories.ts` - Category labels and constants
+- `frontend/src/lib/utils/nearby-cache.ts` - IndexedDB cache utility for nearby search results (10-minute TTL)
 
 ### Server Data Layer
 - `frontend/src/lib/server/supabase.ts` - Supabase server client setup

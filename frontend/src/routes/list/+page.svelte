@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Badge, Button, Card, Input } from '$lib/components/ui';
   import { ErrorState, LoadingState } from '$lib/components/states';
-  import { categoryLabels, categoryList } from '$lib/utils';
+  import { categoryLabels, categoryList, formatRelativeTime } from '$lib/utils';
 import {
   createNearbySearchController,
   nearbyRadiusOptions,
@@ -34,7 +34,8 @@ import {
       hasAttemptedNearby,
       showEmptyNearby,
       primaryCount,
-      resultsBadgeLabel
+      resultsBadgeLabel,
+      isUsingCachedData
     },
     actions: { requestLocation, fetchNearby, clearNearby, setCoordinates }
   } = createNearbySearchController(data.initialResources);
@@ -170,10 +171,16 @@ import {
       </Button>
     </div>
 
-    {#if $isLoadingNearby}
+  {#if $isLoadingNearby}
       <LoadingState message="Searching nearby resources…" />
     {:else if $nearbyError}
-      <ErrorState message={$nearbyError} onRetry={fetchNearby} />
+      {#if $isUsingCachedData}
+        <div class="cache-notice">
+          <p>⚠️ {$nearbyError}</p>
+        </div>
+      {:else}
+        <ErrorState message={$nearbyError} onRetry={fetchNearby} />
+      {/if}
     {:else if $showEmptyNearby}
       <p class="empty-state">No resources found within this radius.</p>
     {/if}
@@ -185,8 +192,10 @@ import {
       <Badge variant="info">{$primaryCount}</Badge>
     </div>
 
-    {#if !$hasAttemptedNearby}
+  {#if !$hasAttemptedNearby}
       <p class="list-hint">Showing recent resources. Pick a location and radius to search nearby.</p>
+    {:else if $isUsingCachedData}
+      <p class="cache-hint">📦 Showing cached results (up to 10 minutes old).</p>
     {/if}
 
     {#if $isLoadingNearby}
@@ -213,7 +222,7 @@ import {
             </div>
 
             <div class="item-details">
-              <span>{new Date(resource.created_at).toLocaleString()}</span>
+              <span class="item-age">{formatRelativeTime(resource.created_at)}</span>
               <span>•</span>
               <span>{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</span>
             </div>
@@ -342,6 +351,25 @@ import {
     color: var(--color-muted);
   }
 
+  .cache-hint {
+    margin: 0;
+    color: var(--color-primary);
+    font-size: 0.875rem;
+  }
+
+  .cache-notice {
+    padding: var(--space-2);
+    background: var(--color-warning-bg, #fef3c7);
+    border: 1px solid var(--color-warning, #f59e0b);
+    border-radius: var(--radius-md);
+  }
+
+  .cache-notice p {
+    margin: 0;
+    color: var(--color-warning-text, #78350f);
+    font-size: 0.875rem;
+  }
+
   .resource-list {
     list-style: none;
     margin: 0;
@@ -383,6 +411,10 @@ import {
     gap: var(--space-2);
     font-size: 0.85rem;
     color: var(--color-muted);
+  }
+
+  .item-age {
+    font-weight: 500;
   }
 
   .item-distance {

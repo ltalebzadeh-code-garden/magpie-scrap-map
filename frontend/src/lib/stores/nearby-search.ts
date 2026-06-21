@@ -1,5 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import { getLocation, getLocationErrorMessage } from '$lib/utils';
+import { getCachedNearby, setCachedNearby } from '$lib/utils/nearby-cache';
 import type {
   NearbyResource,
   ResourceCategory,
@@ -60,6 +61,7 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
   const isLoadingNearby = writable(false);
   const nearbyError = writable<string | null>(null);
   const hasAttemptedNearby = writable(false);
+  const isUsingCachedData = writable(false);
 
   const primaryResources = derived(nearbyResources, ($nearby) => $nearby ?? initialResources);
 
@@ -131,6 +133,7 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
     isLoadingNearby.set(true);
     nearbyError.set(null);
     hasAttemptedNearby.set(true);
+    isUsingCachedData.set(false);
 
     const payload: SearchNearbyParams = {
       latitude,
@@ -140,6 +143,22 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
       status: get(selectedStatus) || undefined,
       limit: 100
     };
+
+    // Try cache first
+    const cached = await getCachedNearby({
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      radius_meters: payload.radius_meters,
+      category: payload.category,
+      status: payload.status
+    });
+
+    if (cached) {
+      nearbyResources.set(cached);
+      isUsingCachedData.set(true);
+      isLoadingNearby.set(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/nearby', {
@@ -160,9 +179,36 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
 
       const json = (await response.json()) as { data: NearbyResource[] };
       nearbyResources.set(json.data);
+
+      // Cache the fresh result
+      await setCachedNearby(
+        {
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          radius_meters: payload.radius_meters,
+          category: payload.category,
+          status: payload.status
+        },
+        json.data
+      );
     } catch (error) {
-      nearbyResources.set(null);
-      nearbyError.set((error as Error)?.message ?? 'Nearby search failed.');
+      // Try to use cached data as fallback on network error
+      const fallbackCache = await getCachedNearby({
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        radius_meters: payload.radius_meters,
+        category: payload.category,
+        status: payload.status
+      });
+
+      if (fallbackCache) {
+        nearbyResources.set(fallbackCache);
+        isUsingCachedData.set(true);
+        nearbyError.set('Using cached results (network unavailable).');
+      } else {
+        nearbyResources.set(null);
+        nearbyError.set((error as Error)?.message ?? 'Nearby search failed.');
+      }
     } finally {
       isLoadingNearby.set(false);
     }
@@ -172,6 +218,7 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
     nearbyResources.set(null);
     nearbyError.set(null);
     hasAttemptedNearby.set(false);
+    isUsingCachedData.set(false);
   }
 
   return {
@@ -193,7 +240,8 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
       hasNearbyResults,
       showEmptyNearby,
       resultsBadgeLabel,
-      primaryCount
+      primaryCount,
+      isUsingCachedData
     },
     actions: {
       requestLocation,

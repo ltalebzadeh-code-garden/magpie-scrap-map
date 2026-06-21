@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Added (2026-06-21)
 
+#### IndexedDB caching and freshness display for nearby search
+- Added IndexedDB cache utility (`frontend/src/lib/utils/nearby-cache.ts`) to store nearby search results with 10-minute TTL
+- Cache keys are generated from search parameters (lat/lng/radius/category/status) to ensure accurate cache hits
+- `fetchNearby` in nearby-search controller now checks cache first for instant results, then fetches fresh data and updates cache
+- On network failures, automatically falls back to cached data with user-visible warning ("Using cached results (network unavailable)")
+- Added `isUsingCachedData` store flag to display cache hints in UI: "📦 Showing cached results (up to 10 minutes old)"
+- List items now show relative time (`formatRelativeTime`) instead of raw timestamps for better age awareness (e.g., "3 hours ago", "2 days ago")
+- Cache behavior is automatic and transparent; no configuration required
+- Changes apply to both home page (Map/List tab) and dedicated List route (`/list`)
+
 #### Location-aware nearby search UI
 - Added `/api/nearby` endpoint to proxy the PostGIS RPC with consistent validation responses (`frontend/src/routes/api/nearby/+server.ts`)
 - Enhanced home map/list page (`frontend/src/routes/+page.svelte`) with nearby search controls:
