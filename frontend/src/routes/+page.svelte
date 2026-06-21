@@ -3,114 +3,40 @@
   import ResourceMap from '$lib/components/ResourceMap.svelte';
   import { Badge, Button, Card, Input } from '$lib/components/ui';
   import { ErrorState, LoadingState } from '$lib/components/states';
-  import { categoryLabels, categoryList, getLocation, getLocationErrorMessage } from '$lib/utils';
-  import type { NearbyResource, ResourceCategory, ResourceStatus } from '$lib/types';
-
-  type RadiusOption = {
-    label: string;
-    value: number;
-  };
-
-  const radiusOptions: RadiusOption[] = [
-    { label: '1 km', value: 1000 },
-    { label: '5 km', value: 5000 },
-    { label: '20 km', value: 20000 }
-  ];
-
-  const statusOptions: ResourceStatus[] = ['available', 'claimed', 'possibly_gone', 'expired'];
+  import { categoryLabels, categoryList } from '$lib/utils';
+  import {
+    createNearbySearchController,
+    nearbyRadiusOptions,
+    nearbyStatusOptions,
+    formatDistance
+  } from '$lib/stores/nearby-search';
 
   let { data } = $props();
 
-  let nearbyResources = $state<NearbyResource[] | null>(null);
-  let isLoadingNearby = $state(false);
-  let nearbyError = $state<string | null>(null);
-  let hasAttemptedNearby = $state(false);
+  const {
+    stores: {
+      selectedRadius,
+      selectedCategory,
+      selectedStatus,
+      searchLatitude,
+      searchLongitude,
+      locationError,
+      nearbyResources,
+      primaryResources,
+      listItems,
+      isLoadingNearby,
+      nearbyError,
+      hasAttemptedNearby,
+      showEmptyNearby,
+      resultsBadgeLabel,
+      primaryCount
+    },
+    actions: { requestLocation, fetchNearby, clearNearby, setCoordinates }
+  } = createNearbySearchController(data.resources);
 
-  let selectedRadius = $state(radiusOptions[1]?.value ?? 5000);
-  let selectedCategory = $state<ResourceCategory | ''>('');
-  let selectedStatus = $state<ResourceStatus | ''>('');
-
-  let searchLatitude = $state<number | null>(null);
-  let searchLongitude = $state<number | null>(null);
-  let locationError = $state<string | null>(null);
-
-  async function requestLocation() {
-    locationError = null;
-    try {
-      const location = await getLocation({ enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
-      searchLatitude = location.latitude;
-      searchLongitude = location.longitude;
-      await fetchNearby();
-    } catch (error) {
-      locationError = getLocationErrorMessage(error as GeolocationPositionError | Error);
-    }
-  }
-
-  async function fetchNearby() {
-    if (searchLatitude == null || searchLongitude == null) {
-      locationError = 'Select a location before searching nearby resources.';
-      return;
-    }
-
-    isLoadingNearby = true;
-    nearbyError = null;
-    hasAttemptedNearby = true;
-
-    const payload = {
-      latitude: searchLatitude,
-      longitude: searchLongitude,
-      radius_meters: Number(selectedRadius),
-      category: selectedCategory || undefined,
-      status: selectedStatus || undefined,
-      limit: 100
-    } as const;
-
-    const response = await fetch('/api/nearby', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errorPayload = await response.json().catch(() => ({ error: { message: 'Nearby search failed.' } }));
-      nearbyResources = null;
-      nearbyError = errorPayload?.error?.message ?? 'Nearby search failed.';
-      isLoadingNearby = false;
-      return;
-    }
-
-    const json = (await response.json()) as { data: NearbyResource[] };
-
-    isLoadingNearby = false;
-
-    nearbyResources = json.data;
-  }
-
-  const resourcesForMap = $derived(nearbyResources ?? data.resources);
-
-  const hasNearbyResults = $derived(Array.isArray(nearbyResources) && nearbyResources.length > 0);
-  const showEmptyNearby = $derived(hasAttemptedNearby && !isLoadingNearby && !nearbyError && !hasNearbyResults);
-
-  const primaryResources = $derived(nearbyResources ?? data.resources);
-
-  const listViewResources = $derived(
-    primaryResources.map((resource) => ({
-      id: resource.id,
-      title: resource.title,
-      category: resource.category,
-      status: resource.status,
-      latitude: resource.latitude,
-      longitude: resource.longitude,
-      created_at: resource.created_at,
-      distance: 'distance_meters' in resource ? resource.distance_meters : undefined
-    }))
-  );
-
-  const badgeLabel = $derived(
-    nearbyResources ? `${nearbyResources.length} nearby` : `${data.resources.length} recent`
-  );
+  const listViewResources = listItems;
+  const resourcesForMap = primaryResources;
+  const badgeLabel = resultsBadgeLabel;
 
   function selectLocationFromInput(event: SubmitEvent) {
     event.preventDefault();
@@ -120,29 +46,17 @@
     const lon = Number(formData.get('longitude'));
 
     if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
-      locationError = 'Latitude must be between -90 and 90.';
+      locationError.set('Latitude must be between -90 and 90.');
       return;
     }
     if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
-      locationError = 'Longitude must be between -180 and 180.';
+      locationError.set('Longitude must be between -180 and 180.');
       return;
     }
 
-    searchLatitude = lat;
-    searchLongitude = lon;
-    locationError = null;
+    setCoordinates(lat, lon);
+    locationError.set(null);
     fetchNearby();
-  }
-
-  function formatDistance(meters?: number) {
-    if (!Number.isFinite(meters)) return null;
-
-    const distance = meters as number;
-
-    if (distance < 1000) {
-      return `${Math.round(distance)} m away`;
-    }
-    return `${(distance / 1000).toFixed(1)} km away`;
   }
 </script>
 
@@ -152,7 +66,7 @@
       {#if !$isOnline}
         <div class="offline-warning">⚠️ Map tiles may not load while offline</div>
       {/if}
-      <ResourceMap resources={resourcesForMap} />
+      <ResourceMap resources={$resourcesForMap} />
     </div>
 
     <div class="nearby-panel">
@@ -162,36 +76,36 @@
             <h2>Nearby search</h2>
             <p class="panel-subtitle">Search resources near your current or chosen location.</p>
           </div>
-          <Badge variant="info">{badgeLabel}</Badge>
+          <Badge variant="info">{$badgeLabel}</Badge>
         </div>
 
         <div class="location-actions">
-          <Button type="button" variant="ghost" on:click={requestLocation} disabled={isLoadingNearby}>
+          <Button type="button" variant="ghost" on:click={requestLocation} disabled={$isLoadingNearby}>
             📍 Use my location
           </Button>
 
           <form class="location-form" onsubmit={selectLocationFromInput}>
             <label>
               <span>Latitude</span>
-              <Input name="latitude" type="number" step="0.000001" value={searchLatitude ?? ''} />
+              <Input name="latitude" type="number" step="0.000001" value={$searchLatitude ?? ''} />
             </label>
             <label>
               <span>Longitude</span>
-              <Input name="longitude" type="number" step="0.000001" value={searchLongitude ?? ''} />
+              <Input name="longitude" type="number" step="0.000001" value={$searchLongitude ?? ''} />
             </label>
             <Button type="submit" size="small">Use coordinates</Button>
           </form>
         </div>
 
-        {#if locationError}
-          <p class="location-error">{locationError}</p>
+        {#if $locationError}
+          <p class="location-error">{$locationError}</p>
         {/if}
 
         <div class="controls-grid">
           <label>
             <span>Radius</span>
-            <select bind:value={selectedRadius}>
-              {#each radiusOptions as option}
+            <select bind:value={$selectedRadius}>
+              {#each nearbyRadiusOptions as option}
                 <option value={option.value}>{option.label}</option>
               {/each}
             </select>
@@ -199,7 +113,7 @@
 
           <label>
             <span>Category</span>
-            <select bind:value={selectedCategory}>
+            <select bind:value={$selectedCategory}>
               <option value="">All categories</option>
               {#each categoryList as category}
                 <option value={category}>{categoryLabels[category]}</option>
@@ -209,9 +123,9 @@
 
           <label>
             <span>Status</span>
-            <select bind:value={selectedStatus}>
+            <select bind:value={$selectedStatus}>
               <option value="">Any status</option>
-              {#each statusOptions as option}
+              {#each nearbyStatusOptions as option}
                 <option value={option}>
                   {option === 'possibly_gone'
                     ? 'Possibly Gone'
@@ -226,49 +140,45 @@
           <Button
             type="button"
             on:click={fetchNearby}
-            disabled={isLoadingNearby || searchLatitude == null || searchLongitude == null}
+            disabled={$isLoadingNearby || $searchLatitude == null || $searchLongitude == null}
           >
-            {isLoadingNearby ? 'Searching…' : 'Search nearby'}
+            {$isLoadingNearby ? 'Searching…' : 'Search nearby'}
           </Button>
-          {#if nearbyResources}
+          {#if $nearbyResources}
             <Button
               type="button"
               variant="ghost"
-              on:click={() => {
-                nearbyResources = null;
-                hasAttemptedNearby = false;
-                nearbyError = null;
-              }}
+              on:click={clearNearby}
             >
               Clear nearby
             </Button>
           {/if}
         </div>
 
-        {#if isLoadingNearby}
+        {#if $isLoadingNearby}
           <LoadingState message="Searching nearby resources…" />
-        {:else if nearbyError}
-          <ErrorState message={nearbyError} onRetry={fetchNearby} />
-        {:else if showEmptyNearby}
+        {:else if $nearbyError}
+          <ErrorState message={$nearbyError} onRetry={fetchNearby} />
+        {:else if $showEmptyNearby}
           <p class="empty-message">No resources found within this radius. Try a larger radius or different filters.</p>
         {/if}
       </Card>
 
       <Card padding="medium" class="list-card">
         <div class="list-header">
-          <h3>{nearbyResources ? 'Nearby resources' : 'Recent resources'}</h3>
-          <Badge variant="info">{primaryResources.length}</Badge>
+          <h3>{$nearbyResources ? 'Nearby resources' : 'Recent resources'}</h3>
+          <Badge variant="info">{$primaryCount}</Badge>
         </div>
 
-        {#if !hasAttemptedNearby}
+        {#if !$hasAttemptedNearby}
           <p class="list-hint">Showing recent resources. Set a location to search nearby instead.</p>
         {/if}
 
-        {#if primaryResources.length === 0 && !isLoadingNearby}
+        {#if $primaryCount === 0 && !$isLoadingNearby}
           <p class="empty-message">No resources to display.</p>
         {:else}
           <ul class="resource-list">
-            {#each listViewResources as resource}
+            {#each $listViewResources as resource}
               <li class="resource-item">
                 <div class="resource-item__header">
                   <strong>{resource.title}</strong>

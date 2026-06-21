@@ -30,6 +30,14 @@ All notable changes to this project will be documented in this file.
   - Calls `search_nearby_resources` Supabase RPC with all filter params
   - Maps DB rows back to app types via `dbToAppCategory` and returns typed `NearbyResource[]`
 
+#### Nearby List foundation (2026-06-21)
+- Added `createNearbySearchController` to `frontend/src/lib/stores/nearby-search.ts`, centralizing radius/category/status filters, location handling, RPC fetch, and derived list items/labels.
+- Updated home Map/List tab (`frontend/src/routes/+page.svelte`) to consume the shared controller so both the map markers and embedded list use identical nearby data.
+- Rebuilt `/list` route:
+  - Server load now returns `initialResources` fallback data via `fetchRecentResources`.
+  - Page (`frontend/src/routes/list/+page.svelte`) renders the same nearby list UI, reusing controller actions for location/radius workflow and showing compact rows (title, category, status, coordinates, timestamp, distance when provided).
+- Documented shared state usage and list row fields in `CURRENT_CONTEXT.md` for follow-up prompts.
+
 ### Added (2026-06-20)
 
 #### Map View with Leaflet

@@ -1,180 +1,324 @@
 <script lang="ts">
-  import { isOnline } from '$lib/stores';
-  import { Card, Button, Badge } from '$lib/components/ui';
-  import { LoadingState, ErrorState } from '$lib/components/states';
-  import { categoryLabels } from '$lib/utils';
-  import type { ResourceSummary, ResourceStatus } from '$lib/types';
+  import { Badge, Button, Card, Input } from '$lib/components/ui';
+  import { ErrorState, LoadingState } from '$lib/components/states';
+  import { categoryLabels, categoryList } from '$lib/utils';
+  import {
+    createNearbySearchController,
+    nearbyRadiusOptions,
+    nearbyStatusOptions,
+    formatDistance
+  } from '$lib/stores/nearby-search';
+  import type { NearbyResource } from '$lib/types';
 
   type ListPageData = {
-    resources: ResourceSummary[];
-    error: string | null;
+    initialResources: NearbyResource[];
+    fetchError: string | null;
   };
 
-  type ListPageForm = {
-    success?: boolean;
-    message?: string;
-    fieldErrors?: Record<string, string>;
-    values?: {
-      id?: string;
-      status?: string;
-    };
-  };
+  let { data } = $props<{ data: ListPageData }>();
 
-  let { data, form } = $props<{ data: ListPageData; form?: ListPageForm }>();
+  const {
+    stores: {
+      selectedRadius,
+      selectedCategory,
+      selectedStatus,
+      searchLatitude,
+      searchLongitude,
+      locationError,
+      nearbyResources,
+      listItems,
+      isLoadingNearby,
+      nearbyError,
+      hasAttemptedNearby,
+      showEmptyNearby,
+      primaryCount,
+      resultsBadgeLabel
+    },
+    actions: { requestLocation, fetchNearby, clearNearby, setCoordinates }
+  } = createNearbySearchController(data.initialResources);
 
-  let showLoading = $state(true);
-  let showError = $state(true);
+  const listViewResources = listItems;
+  const badgeLabel = resultsBadgeLabel;
 
-  function handleRetry() {
-    showError = false;
-  }
+  function handleCoordinateSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+    const lat = Number(formData.get('latitude'));
+    const lon = Number(formData.get('longitude'));
 
-  const resources = $derived(data.resources ?? []);
-  const loadError = $derived(data.error);
-  const formError = $derived(form?.success === false ? form?.message ?? null : null);
-  const formSuccess = $derived(form?.success === true ? form?.message ?? null : null);
-
-  const statusOptions: ResourceStatus[] = ['available', 'claimed', 'possibly_gone', 'expired'];
-
-  function labelForStatus(status: ResourceStatus): string {
-    if (status === 'possibly_gone') {
-      return 'Possibly Gone';
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+      locationError.set('Latitude must be between -90 and 90.');
+      return;
+    }
+    if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
+      locationError.set('Longitude must be between -180 and 180.');
+      return;
     }
 
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    setCoordinates(lat, lon);
+    locationError.set(null);
+    fetchNearby();
   }
 </script>
 
-<div class="page-container">
-  <div class="surface-card surface-card--center placeholder-card">
-    <h2>List View</h2>
-    <div class="placeholder-content section-stack">
-      <p>📋 Text-first list of recent resources (newest first)</p>
-      <p>Current source: Supabase recent resource fetch</p>
-      {#if !$isOnline}
-        <p class="state-note state-note--success">✓ Offline mode enabled (showing last server-rendered list)</p>
-      {/if}
+<div class="list-page">
+  <div class="page-header">
+    <div>
+      <h1>Nearby list</h1>
+      <p class="subtitle">Browse nearby resources without relying on map tiles.</p>
     </div>
+    <Badge variant="info">{$badgeLabel}</Badge>
   </div>
 
-  <Card padding="medium" class="example-card">
-    <div class="example-header">
-      <h3>Recent Resources</h3>
-      <Badge variant="info">{resources.length} items</Badge>
+  {#if data.fetchError}
+    <Card padding="medium" class="error-card">
+      <ErrorState message={data.fetchError} />
+    </Card>
+  {/if}
+
+  <Card padding="medium" class="controls-card">
+    <div class="controls-header">
+      <div>
+        <h2>Set your search area</h2>
+        <p class="caption">Use your location or enter coordinates, radius, and optional filters.</p>
+      </div>
+      {#if $nearbyResources}
+        <Button type="button" variant="ghost" size="small" on:click={clearNearby}>Clear nearby</Button>
+      {/if}
     </div>
 
-    {#if formSuccess}
-      <p class="submit-success">{formSuccess}</p>
+    <div class="location-actions">
+      <Button type="button" on:click={requestLocation} disabled={$isLoadingNearby}>
+        {#if $isLoadingNearby}
+          Searching…
+        {:else}
+          📍 Use my location
+        {/if}
+      </Button>
+
+      <form class="location-form" onsubmit={handleCoordinateSubmit}>
+        <label>
+          <span>Latitude</span>
+          <Input name="latitude" type="number" step="0.000001" value={$searchLatitude ?? ''} />
+        </label>
+        <label>
+          <span>Longitude</span>
+          <Input name="longitude" type="number" step="0.000001" value={$searchLongitude ?? ''} />
+        </label>
+        <Button type="submit" size="small">Use coordinates</Button>
+      </form>
+    </div>
+
+    {#if $locationError}
+      <p class="location-error">{$locationError}</p>
     {/if}
 
-    {#if formError}
-      <p class="submit-error">{formError}</p>
+    <div class="filters-grid">
+      <label>
+        <span>Radius</span>
+        <select bind:value={$selectedRadius}>
+          {#each nearbyRadiusOptions as option}
+            <option value={option.value}>{option.label}</option>
+          {/each}
+        </select>
+      </label>
+
+      <label>
+        <span>Category</span>
+        <select bind:value={$selectedCategory}>
+          <option value="">All categories</option>
+          {#each categoryList as category}
+            <option value={category}>{categoryLabels[category]}</option>
+          {/each}
+        </select>
+      </label>
+
+      <label>
+        <span>Status</span>
+        <select bind:value={$selectedStatus}>
+          <option value="">Any status</option>
+          {#each nearbyStatusOptions as option}
+            <option value={option}>
+              {option === 'possibly_gone'
+                ? 'Possibly Gone'
+                : option.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+            </option>
+          {/each}
+        </select>
+      </label>
+    </div>
+
+    <div class="actions-row">
+      <Button type="button" on:click={fetchNearby} disabled={$isLoadingNearby || !$searchLatitude || !$searchLongitude}>
+        {$isLoadingNearby ? 'Searching…' : 'Search nearby'}
+      </Button>
+    </div>
+
+    {#if $isLoadingNearby}
+      <LoadingState message="Searching nearby resources…" />
+    {:else if $nearbyError}
+      <ErrorState message={$nearbyError} onRetry={fetchNearby} />
+    {:else if $showEmptyNearby}
+      <p class="empty-state">No resources found within this radius.</p>
+    {/if}
+  </Card>
+
+  <Card padding="medium" class="list-card">
+    <div class="list-header">
+      <h2>Results</h2>
+      <Badge variant="info">{$primaryCount}</Badge>
+    </div>
+
+    {#if !$hasAttemptedNearby}
+      <p class="list-hint">Showing recent resources. Pick a location and radius to search nearby.</p>
     {/if}
 
-    {#if loadError}
-      <ErrorState message={loadError} />
-    {:else if resources.length === 0}
-      <p class="retry-success">No resources found yet. Add one from the Add page.</p>
+    {#if $primaryCount === 0 && !$isLoadingNearby}
+      <p class="empty-state">No resources available yet.</p>
     {:else}
       <ul class="resource-list">
-        {#each resources as resource}
+        {#each $listViewResources as resource}
           <li class="resource-item">
-            <div class="resource-item__header">
-              <strong>{resource.title}</strong>
+            <div class="item-header">
+              <div>
+                <strong>{resource.title}</strong>
+                <p class="item-meta">
+                  <Badge category={resource.category} size="small" />
+                  <span>{categoryLabels[resource.category as keyof typeof categoryLabels]}</span>
+                </p>
+              </div>
               <Badge status={resource.status} />
             </div>
-            <div class="resource-item__meta">
-              <Badge category={resource.category} size="small" />
-              <span>{categoryLabels[resource.category as keyof typeof categoryLabels]}</span>
-              <span>•</span>
-              <span>{new Date(resource.created_at).toLocaleString()}</span>
-            </div>
-            <p class="resource-item__coords">{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</p>
 
-            <form method="POST" action="?/updateStatus" class="status-form">
-              <input type="hidden" name="id" value={resource.id} />
-              <label>
-                <span class="status-label">Status</span>
-                <select name="status" class="status-select" value={resource.status}>
-                  {#each statusOptions as option}
-                    <option value={option}>{labelForStatus(option)}</option>
-                  {/each}
-                </select>
-              </label>
-              <Button type="submit" size="small" variant="ghost">Update</Button>
-            </form>
+            <div class="item-details">
+              <span>{new Date(resource.created_at).toLocaleString()}</span>
+              <span>•</span>
+              <span>{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</span>
+            </div>
+
+            {#if formatDistance(resource.distance)}
+              <p class="item-distance">{formatDistance(resource.distance)}</p>
+            {/if}
           </li>
         {/each}
       </ul>
     {/if}
   </Card>
-
-  <div class="section-stack example-card">
-    <Card padding="medium">
-      <div class="example-header">
-        <h3>State Components Example</h3>
-        <Button type="button" variant="ghost" size="small" on:click={() => (showLoading = !showLoading)}>
-          Toggle Loading
-        </Button>
-      </div>
-
-      {#if showLoading}
-        <LoadingState message="Loading nearby resources…" />
-      {/if}
-
-      {#if showError}
-        <ErrorState message="Could not load list data. Please try again." onRetry={handleRetry} />
-      {:else}
-        <p class="retry-success">✓ Retry clicked (error cleared in demo state).</p>
-        <Button type="button" variant="ghost" size="small" on:click={() => (showError = true)}>
-          Show Error Again
-        </Button>
-      {/if}
-    </Card>
-  </div>
 </div>
 
 <style>
-  .placeholder-card {
-    padding: var(--space-8);
+  .list-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
-  h2 {
-    margin-top: 0;
-    margin-bottom: var(--space-3);
-    color: var(--color-text);
-  }
-
-  .placeholder-content {
-    color: var(--color-muted);
-    line-height: var(--line-copy);
-  }
-
-  .placeholder-content p {
-    margin: 0;
-  }
-
-  .example-card {
-    margin-top: var(--space-2);
-  }
-
-  .example-header {
+  .page-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
   }
 
-  h3 {
+  .subtitle {
     margin: 0;
-    font-size: 1rem;
-    color: var(--color-text);
+    color: var(--color-muted);
   }
 
-  .retry-success {
+  .controls-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .controls-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .caption {
     margin: 0;
-    color: var(--color-success);
+    color: var(--color-muted);
     font-size: 0.9rem;
+  }
+
+  .location-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .location-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-2);
+    align-items: end;
+  }
+
+  .location-form label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .location-error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: 0.875rem;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-2);
+  }
+
+  .filters-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  .filters-grid select {
+    min-height: 36px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.6rem;
+  }
+
+  .actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .empty-state {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .list-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .list-hint {
+    margin: 0;
+    color: var(--color-muted);
   }
 
   .resource-list {
@@ -190,74 +334,49 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: var(--space-3);
+    background: var(--color-surface);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    background: var(--color-surface);
   }
 
-  .resource-item__header {
+  .item-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-2);
   }
 
-  .resource-item__meta {
+  .item-meta {
+    margin: var(--space-1) 0 0;
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    font-size: 0.85rem;
     color: var(--color-muted);
-    font-size: 0.875rem;
-    flex-wrap: wrap;
   }
 
-  .resource-item__coords {
-    margin: 0;
-    color: var(--color-muted);
-    font-size: 0.8125rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  }
-
-  .submit-success {
-    margin: 0;
-    color: var(--color-success);
-    font-size: 0.9rem;
-  }
-
-  .submit-error {
-    margin: 0;
-    color: var(--color-error);
-    font-size: 0.9rem;
-  }
-
-  .status-form {
+  .item-details {
     display: flex;
-    align-items: end;
-    gap: var(--space-2);
     flex-wrap: wrap;
-  }
-
-  .status-label {
-    display: block;
-    font-size: 0.8125rem;
+    gap: var(--space-2);
+    font-size: 0.85rem;
     color: var(--color-muted);
-    margin-bottom: var(--space-1);
   }
 
-  .status-select {
-    min-height: 36px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 0.4rem 0.6rem;
-    background: var(--color-surface);
-    color: var(--color-text);
+  .item-distance {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-primary);
   }
 
-  @media (max-width: 480px) {
-    .example-header {
+  @media (min-width: 960px) {
+    .list-page {
+      gap: var(--space-4);
+    }
+
+    .resource-item {
       flex-direction: column;
-      align-items: flex-start;
     }
   }
 </style>
