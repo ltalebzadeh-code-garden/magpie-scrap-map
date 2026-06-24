@@ -6,7 +6,23 @@ All notable changes to this project will be documented in this file.
 
 ### Added (2026-06-24)
 
-#### Offline submit branching (Part 2B)
+#### Queued-post UI + basic sync orchestration
+- Added shared sync orchestration helper:
+  - `frontend/src/lib/offline/sync-runner.ts`
+  - Centralizes queue drain and retry-one flows while reusing existing online create action path (`/add?/create`)
+  - Includes minimal single-flight guard (`activeSyncRun`) to prevent duplicate concurrent sync attempts
+  - Updates queue sync state transitions consistently (`pending`/`syncing`/`failed`/`synced`) and persists last sync error details
+- Updated Offline route UI:
+  - `frontend/src/routes/offline/+page.svelte`
+  - Shows queued posts from IndexedDB queue, including status and last error
+  - Adds minimal per-item actions: retry and remove
+  - Preserves queued photo metadata visibility with an explicit current sync limitation note
+- Updated app shell lifecycle trigger points:
+  - `frontend/src/routes/+layout.svelte`
+  - Triggers queue sync when connectivity returns (`isOnline`) and when app returns to foreground (`visibilitychange`)
+  - Keeps behavior lightweight (no background worker/service worker/polling scheduler)
+
+#### Offline submit branching
 - Added shared add-resource payload builder/normalizer:
   - `frontend/src/lib/offline/create-resource-payload.ts`
   - Exposes form-data reading + aligned payload transforms for server create input and offline queue payload.

@@ -1,8 +1,40 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import '../app.css';
   import Header from '$lib/components/Header.svelte';
   import OfflineBanner from '$lib/components/OfflineBanner.svelte';
   import Nav from '$lib/components/Nav.svelte';
+  import { isOnline } from '$lib/stores';
+  import { runPendingPostsSync } from '$lib/offline/sync-runner';
+
+  function triggerSyncIfOnline() {
+    if (typeof navigator === 'undefined' || !navigator.onLine) {
+      return;
+    }
+
+    void runPendingPostsSync();
+  }
+
+  onMount(() => {
+    const unsubscribe = isOnline.subscribe((online) => {
+      if (online) {
+        triggerSyncIfOnline();
+      }
+    });
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        triggerSyncIfOnline();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      unsubscribe();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  });
 </script>
 
 <div class="app">

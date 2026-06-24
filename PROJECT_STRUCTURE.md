@@ -68,6 +68,7 @@ frontend/
 │   │   ├── offline/
 │   │   │   ├── db.ts               # Dexie IndexedDB setup + pending queue model types
 │   │   │   ├── sync-queue.ts       # Pending post queue CRUD/sync-state helpers
+│   │   │   ├── sync-runner.ts      # Queue sync runner (drain + retry-one) with single-flight guard
 │   │   │   └── README.md           # Offline module contract and notes
 │   │   ├── index.ts                # Main lib exports
 │   │   └── assets/
@@ -163,6 +164,7 @@ frontend/
 - `frontend/src/lib/offline/db.ts` - Dexie database (`magpie-offline`) and `pendingPosts` table schema/types
 - `frontend/src/lib/offline/sync-queue.ts` - Queue operations (`add`, `list`, `update sync state`, `remove`)
 - `frontend/src/lib/offline/create-resource-payload.ts` - Shared add-resource form-to-payload mapping for server create input and offline queue payload
+- `frontend/src/lib/offline/sync-runner.ts` - Shared queue sync orchestration (drain + retry-one) with single-flight guard
 
 ### Server Data Layer
 - `frontend/src/lib/server/supabase.ts` - Supabase server client setup
