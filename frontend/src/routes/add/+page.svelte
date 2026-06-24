@@ -1,8 +1,17 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { enhance } from '$app/forms';
   import { goto } from '$app/navigation';
+  import type { SubmitFunction } from '@sveltejs/kit';
+  import { get } from 'svelte/store';
   import { Button, Input, Textarea, Card, Badge } from '$lib/components/ui';
   import { isOnline } from '$lib/stores';
+  import { addPendingPost } from '$lib/offline/sync-queue';
+  import {
+    buildPendingResourcePayloadFromFormValues,
+    readAddResourceFormValues,
+    toPendingPhotoReference
+  } from '$lib/offline/create-resource-payload';
   import { getLocation, getLocationErrorMessage } from '$lib/utils/geolocation';
   import type { LocationAccuracy, ResourceCategory, ResourceStatus } from '$lib/types';
 
@@ -51,6 +60,7 @@
   let locationState = $state<LocationUiState>('idle');
   let isSubmitting = $state(false);
   let isRedirecting = $state(false);
+  let queueMessage = $state('');
   let photoName = $state('');
 
   let mapContainer: HTMLDivElement | null = null;
@@ -228,7 +238,63 @@
   function handleSubmit() {
     isSubmitting = true;
     isRedirecting = false;
+    queueMessage = '';
   }
+
+  function isLikelyNetworkFailure(error: unknown): boolean {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      return true;
+    }
+
+    if (!(error instanceof Error)) {
+      return false;
+    }
+
+    const message = error.message.toLowerCase();
+    return (
+      message.includes('failed to fetch') ||
+      message.includes('networkerror') ||
+      message.includes('network request failed') ||
+      message.includes('fetch')
+    );
+  }
+
+  async function queuePendingCreate(formData: FormData, reason: 'offline' | 'network_failure') {
+    const values = readAddResourceFormValues(formData);
+    const payload = buildPendingResourcePayloadFromFormValues(values);
+
+    const photoEntry = formData.get('photo');
+    const photo = photoEntry instanceof File && photoEntry.size > 0 ? toPendingPhotoReference(photoEntry) : undefined;
+
+    await addPendingPost({
+      payload,
+      photo
+    });
+
+    isSubmitting = false;
+    isRedirecting = false;
+    queueMessage =
+      reason === 'offline'
+        ? 'You are offline. This resource was saved locally and will sync when you are back online.'
+        : 'Network issue detected. This resource was saved locally and will sync when you are back online.';
+  }
+
+  const submitWithOfflineQueue: SubmitFunction = ({ formData, cancel }) => {
+    if (!get(isOnline)) {
+      cancel();
+      void queuePendingCreate(formData, 'offline');
+      return;
+    }
+
+    return async ({ result, update }) => {
+      if (result.type === 'error' && isLikelyNetworkFailure(result.error)) {
+        await queuePendingCreate(formData, 'network_failure');
+        return;
+      }
+
+      await update();
+    };
+  };
 
   function handlePhotoChange(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
@@ -257,6 +323,11 @@
           Resource <strong>{form.created.title}</strong> was created successfully.
         </p>
       </div>
+    {:else if queueMessage}
+      <div class="submit-result success-message">
+        <Badge variant="info">Queued</Badge>
+        <p>{queueMessage}</p>
+      </div>
     {:else if form?.message}
       <div class="submit-result error-message">
         <Badge variant="error">Error</Badge>
@@ -264,7 +335,13 @@
       </div>
     {/if}
 
-    <form method="POST" action="?/create" enctype="multipart/form-data" onsubmit={handleSubmit}>
+    <form
+      method="POST"
+      action="?/create"
+      enctype="multipart/form-data"
+      onsubmit={handleSubmit}
+      use:enhance={submitWithOfflineQueue}
+    >
       <div class="form-group">
         <label for="title">Title <span class="required">*</span></label>
         <Input

@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-24)
+
+#### Offline submit branching (Part 2B)
+- Added shared add-resource payload builder/normalizer:
+  - `frontend/src/lib/offline/create-resource-payload.ts`
+  - Exposes form-data reading + aligned payload transforms for server create input and offline queue payload.
+- Updated `frontend/src/routes/add/+page.server.ts` to reuse shared payload mapping for `createResource` input.
+- Updated `frontend/src/routes/add/+page.svelte` submit handling to keep a single submit path while adding queue fallback:
+  - online: continues normal `?/create` submission
+  - offline: cancels submit and queues with `addPendingPost(...)`
+  - likely network failure during enhanced submit: queues with `addPendingPost(...)`
+- Preserved existing queue/storage layer and connectivity store reuse:
+  - `frontend/src/lib/offline/db.ts`
+  - `frontend/src/lib/offline/sync-queue.ts`
+  - `frontend/src/lib/stores/online.ts`
+
 ### Added (2026-06-23)
 
 #### Offline queue foundation (Part 1: Dexie + IndexedDB model/helpers)

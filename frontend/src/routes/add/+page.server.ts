@@ -2,9 +2,11 @@ import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { createResource } from '$lib/server/resources';
 import { getSupabaseClient } from '$lib/server/supabase';
+import {
+  buildCreateResourceInputFromFormValues,
+  readAddResourceFormValues
+} from '$lib/offline/create-resource-payload';
 import type {
-  CreateResourceInput,
-  LocationAccuracy,
   ResourceCategory,
   ResourceStatus
 } from '$lib/types';
@@ -71,19 +73,7 @@ export const actions: Actions = {
     const photoEntry = formData.get('photo');
     const photoFile = photoEntry instanceof File && photoEntry.size > 0 ? photoEntry : null;
 
-    const values = {
-      title: String(formData.get('title') ?? ''),
-      description: String(formData.get('description') ?? ''),
-      category: String(formData.get('category') ?? 'other'),
-      status: String(formData.get('status') ?? 'available'),
-      latitude: String(formData.get('latitude') ?? ''),
-      longitude: String(formData.get('longitude') ?? ''),
-      contact_method: String(formData.get('contact_method') ?? ''),
-      location_method: String(formData.get('location_method') ?? 'gps'),
-      manual_area: String(formData.get('manual_area') ?? ''),
-      location_accuracy: String(formData.get('location_accuracy') ?? 'approximate'),
-      photo_url: ''
-    };
+    const values = readAddResourceFormValues(formData);
 
     const locationMethod = values.location_method;
     const manualArea = values.manual_area.trim();
@@ -99,8 +89,8 @@ export const actions: Actions = {
     }
 
     if (
-      !Number.isFinite(toNumber(formData.get('latitude'))) ||
-      !Number.isFinite(toNumber(formData.get('longitude')))
+      !Number.isFinite(toNumber(values.latitude)) ||
+      !Number.isFinite(toNumber(values.longitude))
     ) {
       fieldErrors.location = 'Please set a valid location before submitting.';
     }
@@ -124,23 +114,7 @@ export const actions: Actions = {
       });
     }
 
-    const locationAccuracy: LocationAccuracy =
-      locationMethod === 'manual'
-        ? 'area_only'
-        : values.location_accuracy === 'exact' || values.location_accuracy === 'approximate'
-          ? values.location_accuracy
-          : 'exact';
-
-    const payload: CreateResourceInput = {
-      title: values.title,
-      description: values.description,
-      category: values.category as ResourceCategory,
-      status: values.status as ResourceStatus,
-      latitude: toNumber(formData.get('latitude')),
-      longitude: toNumber(formData.get('longitude')),
-      contact_method: values.contact_method || undefined,
-      location_accuracy: locationAccuracy
-    };
+    const payload = buildCreateResourceInputFromFormValues(values);
 
     if (photoFile) {
       const uploadResult = await uploadPhotoIfPresent(photoFile);

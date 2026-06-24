@@ -162,6 +162,7 @@ frontend/
 ### Offline Queue Layer
 - `frontend/src/lib/offline/db.ts` - Dexie database (`magpie-offline`) and `pendingPosts` table schema/types
 - `frontend/src/lib/offline/sync-queue.ts` - Queue operations (`add`, `list`, `update sync state`, `remove`)
+- `frontend/src/lib/offline/create-resource-payload.ts` - Shared add-resource form-to-payload mapping for server create input and offline queue payload
 
 ### Server Data Layer
 - `frontend/src/lib/server/supabase.ts` - Supabase server client setup
