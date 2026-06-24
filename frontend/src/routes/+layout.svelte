@@ -15,7 +15,23 @@
     void runPendingPostsSync();
   }
 
+  function registerServiceWorker() {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return;
+    }
+
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Keep registration failure non-fatal for app usage.
+    });
+  }
+
   onMount(() => {
+    registerServiceWorker();
+
     const unsubscribe = isOnline.subscribe((online) => {
       if (online) {
         triggerSyncIfOnline();
