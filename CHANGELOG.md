@@ -6,6 +6,28 @@ All notable changes to this project will be documented in this file.
 
 ### Added (2026-06-24)
 
+#### PWA installability and runtime caching
+- Added minimal PWA foundation for installability and offline launch:
+  - `frontend/static/manifest.webmanifest` - Web app manifest with name, icons, theme, display mode
+  - `frontend/static/icons/icon-192.png` and `icon-512.png` - Install surface icons
+  - Updated `frontend/src/app.html` with manifest link, theme-color, mobile web app capability meta tags, icon links
+  - Updated `frontend/src/routes/+layout.svelte` to register service worker in browser environments with non-fatal fallback
+- Added minimal native service worker with app shell and runtime caching:
+  - `frontend/static/sw.js` - Pre-caches app shell URLs (`/`, `/offline`, manifest, icons, robots.txt)
+  - Cache-first strategy for SvelteKit build output (`/_app/*`)
+  - Network-first runtime caching for SSR navigation requests (HTML documents):
+    - 30-minute TTL for `/` and `/list` (resource summaries without contact info)
+    - 10-minute TTL for `/resource/[id]` (includes `contact_method`)
+    - Serves stale cache when offline regardless of TTL expiration
+    - Falls back to `/offline` shell only when no cached version exists
+  - Excludes `/api/*` routes (already handled by client-side IndexedDB cache in `lib/utils/nearby-cache.ts`)
+  - Excludes cross-origin requests (Leaflet, external photos remain network-dependent)
+  - Skips non-GET requests (write operations handled by existing offline queue)
+  - Automatic cache cleanup on service worker activation (removes old versioned caches)
+- Preserves existing offline infrastructure:
+  - Client-side nearby search IndexedDB cache continues working independently
+  - Offline write queue and sync behavior unchanged
+
 #### Queued-post UI + basic sync orchestration
 - Added shared sync orchestration helper:
   - `frontend/src/lib/offline/sync-runner.ts`

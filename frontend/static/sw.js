@@ -1,7 +1,14 @@
 const SW_VERSION = 'v1';
 const APP_SHELL_CACHE = `app-shell-${SW_VERSION}`;
+const RUNTIME_CACHE = `runtime-v${SW_VERSION}`;
+const TTL_LONG_MS = 30 * 60 * 1000;  // 30 min — /, /list
+const TTL_SHORT_MS = 10 * 60 * 1000; // 10 min — /resource/[id]
 
 const APP_SHELL_URLS = ['/', '/offline', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/robots.txt'];
+
+function getTtl(pathname) {
+	return pathname.startsWith('/resource/') ? TTL_SHORT_MS : TTL_LONG_MS;
+}
 
 self.addEventListener('install', (event) => {
 	self.skipWaiting();
@@ -17,7 +24,13 @@ self.addEventListener('activate', (event) => {
 	event.waitUntil(
 		caches
 			.keys()
-			.then((keys) => Promise.all(keys.filter((key) => key !== APP_SHELL_CACHE).map((key) => caches.delete(key))))
+			.then((keys) =>
+				Promise.all(
+					keys
+						.filter((key) => key !== APP_SHELL_CACHE && key !== RUNTIME_CACHE)
+						.map((key) => caches.delete(key))
+				)
+			)
 			.then(() => self.clients.claim())
 	);
 });
@@ -41,11 +54,31 @@ self.addEventListener('fetch', (event) => {
 
 	if (request.mode === 'navigate') {
 		event.respondWith(
-			fetch(request).catch(async () => {
-				const cache = await caches.open(APP_SHELL_CACHE);
-				const offlinePage = await cache.match('/offline');
-				return offlinePage || Response.error();
-			})
+			fetch(request)
+				.then(async (networkResponse) => {
+					const clone = networkResponse.clone();
+					const headers = new Headers(clone.headers);
+					headers.set('x-sw-cached-at', String(Date.now()));
+					headers.set('x-sw-ttl', String(getTtl(url.pathname)));
+					const cachedResponse = new Response(clone.body, {
+						status: clone.status,
+						statusText: clone.statusText,
+						headers
+					});
+					const cache = await caches.open(RUNTIME_CACHE);
+					cache.put(request, cachedResponse);
+					return networkResponse;
+				})
+				.catch(async () => {
+					const cache = await caches.open(RUNTIME_CACHE);
+					const cached = await cache.match(request);
+					if (cached) {
+						return cached;
+					}
+					const shellCache = await caches.open(APP_SHELL_CACHE);
+					const offlinePage = await shellCache.match('/offline');
+					return offlinePage || Response.error();
+				})
 		);
 		return;
 	}

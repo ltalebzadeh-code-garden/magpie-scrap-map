@@ -69,6 +69,7 @@ frontend/
 │   │   │   ├── db.ts               # Dexie IndexedDB setup + pending queue model types
 │   │   │   ├── sync-queue.ts       # Pending post queue CRUD/sync-state helpers
 │   │   │   ├── sync-runner.ts      # Queue sync runner (drain + retry-one) with single-flight guard
+│   │   │   ├── create-resource-payload.ts # Shared payload builder/normalizer for server + queue
 │   │   │   └── README.md           # Offline module contract and notes
 │   │   ├── index.ts                # Main lib exports
 │   │   └── assets/
@@ -81,6 +82,10 @@ frontend/
 │   │   ├── add/
 │   │   │   ├── +page.server.ts     # Server action for resource creation
 │   │   │   └── +page.svelte        # Add resource page
+│   │   ├── resource/
+│   │   │   └── [id]/
+│   │   │       ├── +page.server.ts # Server load for resource detail by ID
+│   │   │       └── +page.svelte    # Resource detail page
 │   │   ├── offline/
 │   │   │   └── +page.svelte        # Offline queue page
 │   │   ├── +layout.svelte          # Root layout with header/nav
@@ -88,7 +93,13 @@ frontend/
 │   │   └── +page.server.ts         # Server load for map resources
 │   ├── app.html                    # HTML template
 │   └── app.d.ts                    # App-level TypeScript definitions
-├── static/                         # Static assets
+├── static/
+│   ├── sw.js                       # Service worker (app shell + runtime caching)
+│   ├── manifest.webmanifest        # Web app manifest for PWA installability
+│   ├── icons/
+│   │   ├── icon-192.png            # PWA icon (192x192)
+│   │   └── icon-512.png            # PWA icon (512x512)
+│   └── robots.txt                  # Robots file
 ├── node_modules/                   # Dependencies (gitignored)
 ├── .svelte-kit/                    # SvelteKit build artifacts (gitignored)
 ├── .eslintrc.cjs                   # ESLint configuration
