@@ -66,7 +66,9 @@ frontend/
 │   │   │   ├── supabase.ts         # Supabase server client initialization
 │   │   │   └── resources.ts        # Resource data access + validation service
 │   │   ├── offline/
-│   │   │   └── README.md           # Placeholder for IndexedDB utilities
+│   │   │   ├── db.ts               # Dexie IndexedDB setup + pending queue model types
+│   │   │   ├── sync-queue.ts       # Pending post queue CRUD/sync-state helpers
+│   │   │   └── README.md           # Offline module contract and notes
 │   │   ├── index.ts                # Main lib exports
 │   │   └── assets/
 │   │       └── favicon.svg         # App favicon
@@ -156,6 +158,10 @@ frontend/
 ### Utilities
 - `frontend/src/lib/utils/categories.ts` - Category labels and constants
 - `frontend/src/lib/utils/nearby-cache.ts` - IndexedDB cache utility for nearby search results (10-minute TTL)
+
+### Offline Queue Layer
+- `frontend/src/lib/offline/db.ts` - Dexie database (`magpie-offline`) and `pendingPosts` table schema/types
+- `frontend/src/lib/offline/sync-queue.ts` - Queue operations (`add`, `list`, `update sync state`, `remove`)
 
 ### Server Data Layer
 - `frontend/src/lib/server/supabase.ts` - Supabase server client setup

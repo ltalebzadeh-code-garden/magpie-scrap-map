@@ -1,10 +1,25 @@
 # Offline Utilities
 
-This folder will contain IndexedDB utilities and sync queue logic for offline support.
+Offline persistence foundation for resource creation queueing.
 
-Planned modules:
-- `db.ts` - Dexie.js setup and schema
-- `sync-queue.ts` - Offline submission queue
-- `cache.ts` - Resource caching utilities
+## Modules
 
-To be implemented in Day 8-9 of development.
+- `db.ts`
+  - Dexie-backed IndexedDB setup (`magpie-offline`)
+  - Defines `pendingPosts` schema and queue model types:
+    - `PendingResourceCreatePayload`
+    - `PendingPhotoReference`
+    - `PendingResourcePost`
+    - `PendingPostSyncStatus`
+- `sync-queue.ts`
+  - Queue storage helpers:
+    - `addPendingPost`
+    - `listPendingPosts`
+    - `updatePendingPostSyncState`
+    - `removePendingPost`
+
+## Notes
+
+- This is the **single** queue/storage contract for pending resource posts.
+- Submission branching and sync orchestration are intentionally deferred to later parts.
+- Existing nearby-search cache remains in `src/lib/utils/nearby-cache.ts` and is separate from this queue.

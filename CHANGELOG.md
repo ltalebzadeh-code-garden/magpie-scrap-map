@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-23)
+
+#### Offline queue foundation (Part 1: Dexie + IndexedDB model/helpers)
+- Audited existing offline/local persistence and confirmed Dexie was not previously used.
+- Added Dexie dependency declaration in `frontend/package.json`.
+- Added offline queue database layer:
+  - `frontend/src/lib/offline/db.ts`
+  - Introduces `magpie-offline` IndexedDB database and `pendingPosts` table
+  - Defines shared queue model types for pending resource creation payloads, optional photo metadata, sync status, sync errors, and timestamps
+- Added queue storage helper module:
+  - `frontend/src/lib/offline/sync-queue.ts`
+  - Implements `addPendingPost`, `listPendingPosts`, `updatePendingPostSyncState`, `removePendingPost`
+- Updated `frontend/src/lib/offline/README.md` from placeholder to documented module contract.
+- Kept existing add-resource submit path unchanged (no second submit flow, no sync orchestration in Part 1).
+
 ### Added (2026-06-22)
 
 #### Add-resource end-to-end create flow completion (photo + success + detail redirect)
