@@ -62,6 +62,13 @@
   let isRedirecting = $state(false);
   let queueMessage = $state('');
   let photoName = $state('');
+  let photoNotice = $state('');
+  let photoInput: HTMLInputElement | null = null;
+
+  const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
+  const MAX_PHOTO_DIMENSION = 1600;
+  const PHOTO_QUALITY = 0.82;
+  const SUPPORTED_PHOTO_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
   let mapContainer: HTMLDivElement | null = null;
   let leaflet: typeof import('leaflet') | null = null;
@@ -241,6 +248,72 @@
     queueMessage = '';
   }
 
+  function setPhotoInputFile(file: File | null) {
+    if (!photoInput) return;
+
+    const dataTransfer = new DataTransfer();
+    if (file) {
+      dataTransfer.items.add(file);
+    }
+
+    photoInput.files = dataTransfer.files;
+  }
+
+  async function compressPhoto(file: File): Promise<File> {
+    if (typeof window === 'undefined') {
+      return file;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+
+    try {
+      const image = new Image();
+      image.decoding = 'async';
+
+      const loaded = new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('Could not load image.'));
+      });
+
+      image.src = imageUrl;
+      await loaded;
+
+      const targetWidth = image.width > MAX_PHOTO_DIMENSION ? MAX_PHOTO_DIMENSION : image.width;
+      const targetHeight = image.height > MAX_PHOTO_DIMENSION ? MAX_PHOTO_DIMENSION : image.height;
+      const scale = Math.min(targetWidth / image.width, targetHeight / image.height, 1);
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error('Canvas is not available.');
+      }
+
+      context.drawImage(image, 0, 0, width, height);
+
+      const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, outputType, outputType === 'image/png' ? undefined : PHOTO_QUALITY);
+      });
+
+      if (!blob) {
+        throw new Error('Photo compression failed.');
+      }
+
+      const compressedFileName = file.name.replace(/\.[^.]+$/, '') + (outputType === 'image/png' ? '.png' : '.jpg');
+      return new File([blob], compressedFileName, {
+        type: blob.type || outputType,
+        lastModified: Date.now()
+      });
+    } finally {
+      URL.revokeObjectURL(imageUrl);
+    }
+  }
+
   function isLikelyNetworkFailure(error: unknown): boolean {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       return true;
@@ -299,7 +372,53 @@
   function handlePhotoChange(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
     const file = input.files?.[0];
-    photoName = file?.name ?? '';
+    photoNotice = '';
+
+    if (!file) {
+      photoName = '';
+      setPhotoInputFile(null);
+      return;
+    }
+
+    if (!SUPPORTED_PHOTO_TYPES.has(file.type)) {
+      photoName = '';
+      photoNotice = 'Please choose a JPG, PNG, or WebP image.';
+      input.value = '';
+      setPhotoInputFile(null);
+      return;
+    }
+
+    if (file.size > MAX_PHOTO_SIZE_BYTES) {
+      photoName = '';
+      photoNotice = 'Please choose an image that is 5MB or smaller.';
+      input.value = '';
+      setPhotoInputFile(null);
+      return;
+    }
+
+    photoName = file.name;
+
+    void (async () => {
+      try {
+        const compressedFile = await compressPhoto(file);
+
+        if (compressedFile.size > MAX_PHOTO_SIZE_BYTES) {
+          photoName = '';
+          photoNotice = 'That image is still too large after compression, so it will be skipped.';
+          input.value = '';
+          setPhotoInputFile(null);
+          return;
+        }
+
+        photoName = compressedFile.name;
+        setPhotoInputFile(compressedFile);
+      } catch {
+        photoName = '';
+        photoNotice = 'Photo processing failed, so the resource will be submitted without a photo.';
+        input.value = '';
+        setPhotoInputFile(null);
+      }
+    })();
   }
 </script>
 
@@ -558,16 +677,20 @@
         <div class="photo-picker-placeholder">
           <div class="location-mode-body">
             <label for="photo">Choose image (JPG, PNG, or WebP, up to 5MB)</label>
-            <Input
+            <input
               id="photo"
               name="photo"
               type="file"
               accept="image/jpeg,image/png,image/webp"
+              bind:this={photoInput}
               onchange={handlePhotoChange}
             />
             <p class="helper-text">
               {photoName ? `Selected: ${photoName}` : 'No file selected. You can submit without a photo.'}
             </p>
+            {#if photoNotice}
+              <span class="helper-text">{photoNotice}</span>
+            {/if}
             {#if fieldErrors.photo}
               <span class="field-error">{fieldErrors.photo}</span>
             {/if}

@@ -47,8 +47,7 @@ async function uploadPhotoIfPresent(file: File): Promise<{ ok: true; photoUrl: s
   if (uploadError) {
     return {
       ok: false,
-      message:
-        'Photo upload failed. Please try a smaller JPG/PNG/WebP image, or submit without a photo.'
+      message: 'Photo upload failed.'
     };
   }
 
@@ -72,6 +71,7 @@ export const actions: Actions = {
     const formData = await request.formData();
     const photoEntry = formData.get('photo');
     const photoFile = photoEntry instanceof File && photoEntry.size > 0 ? photoEntry : null;
+    let uploadPhotoUrl: string | undefined;
 
     const values = readAddResourceFormValues(formData);
 
@@ -119,19 +119,16 @@ export const actions: Actions = {
     if (photoFile) {
       const uploadResult = await uploadPhotoIfPresent(photoFile);
 
-      if (!uploadResult.ok) {
-        return fail(500, {
-          success: false,
-          message: uploadResult.message,
-          fieldErrors: {
-            photo: uploadResult.message
-          },
-          values
-        });
+      if (uploadResult.ok) {
+        uploadPhotoUrl = uploadResult.photoUrl;
+      } else {
+        values.photo_url = '';
       }
+    }
 
-      payload.photo_url = uploadResult.photoUrl;
-      values.photo_url = uploadResult.photoUrl;
+    if (uploadPhotoUrl) {
+      payload.photo_url = uploadPhotoUrl;
+      values.photo_url = uploadPhotoUrl;
     }
 
     const result = await createResource(payload);
