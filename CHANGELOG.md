@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (2026-06-26)
+
+#### Resource detail polish and community status reporting
+
+##### Added
+- Resource detail page stale warning banner for expired or past-expiry resources.
+- Resource detail page copy-link action with temporary success/failure feedback.
+- Click-through navigation from home/map and list resource cards to `/resource/[id]`.
+- Minimal community status reporting flow on the resource detail page.
+- Server action for detail-page status updates using the existing `updateResourceStatus(...)` backend path.
+
+##### Changed
+- Resource detail page now supports two constrained community report actions:
+  - `Mark as claimed`
+  - `Report possibly gone`
+- Detail-page status badge now updates immediately after a successful status report.
+- Status update handling is intentionally limited at the server action layer to:
+  - `claimed`
+  - `possibly_gone`
+
 ### Added (2026-06-24)
 
 #### PWA installability and runtime caching

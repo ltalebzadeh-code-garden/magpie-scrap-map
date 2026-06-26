@@ -1,18 +1,55 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
   import { Badge, Card, Button } from '$lib/components/ui';
   import { categoryLabels, formatRelativeTime } from '$lib/utils';
-  import type { Resource } from '$lib/types';
+  import type { Resource, ResourceStatus } from '$lib/types';
 
   type ResourceDetailData = {
     resource: Resource;
   };
 
-  let { data } = $props<{ data: ResourceDetailData }>();
+  type StatusActionData = {
+    success?: boolean;
+    message?: string;
+    status?: ResourceStatus;
+    updated_at?: string;
+  };
+
+  type EnhanceSubmit = {
+    formData: FormData;
+    cancel: () => void;
+  };
+
+  type EnhanceResult = {
+    update: () => Promise<void>;
+  };
+
+  let { data, form } = $props<{ data: ResourceDetailData; form?: StatusActionData }>();
 
   const resource = data.resource;
   const mapsHref = `https://www.google.com/maps?q=${resource.latitude},${resource.longitude}`;
+  const statusActions: { status: ResourceStatus; label: string; confirmation: string }[] = [
+    {
+      status: 'claimed',
+      label: 'Mark as claimed',
+      confirmation: 'Report this resource as claimed?'
+    },
+    {
+      status: 'possibly_gone',
+      label: 'Report possibly gone',
+      confirmation: 'Report this resource as possibly gone?'
+    }
+  ];
 
   let copyFeedback = $state('');
+  let currentStatus = $state(resource.status);
+  let isStatusPending = $state(false);
+
+  $effect(() => {
+    if (form?.success && form.status) {
+      currentStatus = form.status;
+    }
+  });
 
   function copyLink() {
     if (typeof window === 'undefined' || !navigator.clipboard) {
@@ -36,7 +73,29 @@
       });
   }
 
-  const isStale = resource.status === 'expired' || (resource.expires_at && new Date(resource.expires_at) < new Date());
+  const isStale = $derived(
+    currentStatus === 'expired' || (resource.expires_at && new Date(resource.expires_at) < new Date())
+  );
+
+  const confirmStatusUpdate = ({ formData, cancel }: EnhanceSubmit) => {
+    const status = String(formData.get('status') || '') as ResourceStatus;
+    const action = statusActions.find((item) => item.status === status);
+
+    if (!action || !confirm(action.confirmation)) {
+      cancel();
+      return;
+    }
+
+    isStatusPending = true;
+
+    return async ({ update }: EnhanceResult) => {
+      try {
+        await update();
+      } finally {
+        isStatusPending = false;
+      }
+    };
+  };
 </script>
 
 <div class="detail-page">
@@ -54,7 +113,7 @@
       </div>
       <div class="badges">
         <Badge category={resource.category} />
-        <Badge status={resource.status} />
+        <Badge status={currentStatus} />
       </div>
     </div>
 
@@ -87,6 +146,26 @@
       <p><strong>Category:</strong> {categoryLabels[resource.category as keyof typeof categoryLabels]}</p>
       {#if resource.contact_method}
         <p><strong>Contact:</strong> {resource.contact_method}</p>
+      {/if}
+    </section>
+
+    <section class="section status-report">
+      <h2>Community status report</h2>
+      <p class="subtle">Help others by reporting if this resource has already been claimed or may be gone.</p>
+
+      <form method="POST" action="?/updateStatus" use:enhance={confirmStatusUpdate}>
+        <input type="hidden" name="id" value={resource.id} />
+        <div class="status-actions">
+          {#each statusActions as action}
+            <Button type="submit" name="status" value={action.status} variant="ghost" disabled={isStatusPending}>
+              {isStatusPending ? 'Saving…' : action.label}
+            </Button>
+          {/each}
+        </div>
+      </form>
+
+      {#if form?.message}
+        <p class:success-message={form.success} class:error-message={!form.success}>{form.message}</p>
       {/if}
     </section>
 
@@ -176,6 +255,32 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+  }
+
+  .status-report {
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .status-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  .success-message,
+  .error-message {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .success-message {
+    color: #166534;
+  }
+
+  .error-message {
+    color: #b91c1c;
   }
 
   .stale-warning {

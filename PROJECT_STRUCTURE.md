@@ -84,7 +84,7 @@ frontend/
 │   │   │   └── +page.svelte        # Add resource page
 │   │   ├── resource/
 │   │   │   └── [id]/
-│   │   │       ├── +page.server.ts # Server load for resource detail by ID
+│   │   │       ├── +page.server.ts # Server load + status update action for resource detail
 │   │   │       └── +page.svelte    # Resource detail page
 │   │   ├── offline/
 │   │   │   └── +page.svelte        # Offline queue page
@@ -162,6 +162,7 @@ frontend/
 - `frontend/src/routes/add/+page.svelte` - Add resource form
 - `frontend/src/routes/add/+page.server.ts` - Server action for creating resources
 - `frontend/src/routes/offline/+page.svelte` - Offline queue
+- `frontend/src/routes/resource/[id]/+page.server.ts` - Server load and form action for resource detail status reporting
 
 ### Stores
 - `frontend/src/lib/stores/online.ts` - Online/offline state detection
