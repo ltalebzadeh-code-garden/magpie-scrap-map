@@ -15,6 +15,10 @@ const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const RESOURCE_PHOTOS_BUCKET = 'resource-photos';
 
+type PhotoUploadResult =
+  | { ok: true; photoUrl: string; photoPath: string }
+  | { ok: false; message: string };
+
 function toNumber(value: FormDataEntryValue | null): number {
   if (typeof value !== 'string') {
     return Number.NaN;
@@ -30,40 +34,56 @@ function getPhotoExtension(file: File): string {
   return 'bin';
 }
 
-async function uploadPhotoIfPresent(file: File): Promise<{ ok: true; photoUrl: string } | { ok: false; message: string }> {
-  const supabase = getSupabaseClient();
-  const ext = getPhotoExtension(file);
-  const path = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-  const fileBuffer = await file.arrayBuffer();
+async function uploadPhotoIfPresent(file: File): Promise<PhotoUploadResult> {
+  try {
+    const supabase = getSupabaseClient();
+    const ext = getPhotoExtension(file);
+    const path = `public/${crypto.randomUUID()}.${ext}`;
+    const fileBuffer = await file.arrayBuffer();
 
-  const { error: uploadError } = await supabase.storage
-    .from(RESOURCE_PHOTOS_BUCKET)
-    .upload(path, fileBuffer, {
-      contentType: file.type,
-      upsert: false,
-      cacheControl: '3600'
-    });
+    const { error: uploadError } = await supabase.storage
+      .from(RESOURCE_PHOTOS_BUCKET)
+      .upload(path, fileBuffer, {
+        contentType: file.type,
+        upsert: false,
+        cacheControl: '3600'
+      });
 
-  if (uploadError) {
+    if (uploadError) {
+      return {
+        ok: false,
+        message: 'Photo upload failed.'
+      };
+    }
+
+    const { data } = supabase.storage.from(RESOURCE_PHOTOS_BUCKET).getPublicUrl(path);
+
+    if (!data.publicUrl) {
+      return {
+        ok: false,
+        message: 'Photo uploaded but URL could not be generated. Please try again.'
+      };
+    }
+
+    return {
+      ok: true,
+      photoUrl: data.publicUrl,
+      photoPath: path
+    };
+  } catch {
     return {
       ok: false,
       message: 'Photo upload failed.'
     };
   }
+}
 
-  const { data } = supabase.storage.from(RESOURCE_PHOTOS_BUCKET).getPublicUrl(path);
-
-  if (!data.publicUrl) {
-    return {
-      ok: false,
-      message: 'Photo uploaded but URL could not be generated. Please try again.'
-    };
+async function removeUploadedPhotoBestEffort(path: string): Promise<void> {
+  try {
+    await getSupabaseClient().storage.from(RESOURCE_PHOTOS_BUCKET).remove([path]);
+  } catch {
+    // Resource creation failure should stay the only user-facing error here.
   }
-
-  return {
-    ok: true,
-    photoUrl: data.publicUrl
-  };
 }
 
 export const actions: Actions = {
@@ -72,6 +92,7 @@ export const actions: Actions = {
     const photoEntry = formData.get('photo');
     const photoFile = photoEntry instanceof File && photoEntry.size > 0 ? photoEntry : null;
     let uploadPhotoUrl: string | undefined;
+    let uploadPhotoPath: string | undefined;
 
     const values = readAddResourceFormValues(formData);
 
@@ -121,6 +142,7 @@ export const actions: Actions = {
 
       if (uploadResult.ok) {
         uploadPhotoUrl = uploadResult.photoUrl;
+        uploadPhotoPath = uploadResult.photoPath;
       } else {
         values.photo_url = '';
       }
@@ -134,6 +156,10 @@ export const actions: Actions = {
     const result = await createResource(payload);
 
     if (!result.ok) {
+      if (uploadPhotoPath) {
+        await removeUploadedPhotoBestEffort(uploadPhotoPath);
+      }
+
       const status = result.error.code === 'VALIDATION_ERROR' ? 400 : 500;
 
       return fail(status, {
