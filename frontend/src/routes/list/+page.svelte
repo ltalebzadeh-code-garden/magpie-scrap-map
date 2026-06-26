@@ -211,6 +211,18 @@ import {
         {#each $listViewResources as resource}
           <li class="resource-item">
             <a class="resource-item-link" href={`/resource/${resource.id}`}>
+              {#if resource.photo_url}
+                <img
+                  class="resource-item-thumb"
+                  src={resource.photo_url}
+                  alt=""
+                  loading="lazy"
+                  onerror={(event) => {
+                    const img = event.currentTarget as HTMLImageElement | null;
+                    if (img) img.hidden = true;
+                  }}
+                />
+              {/if}
               <div class="item-header">
                 <div>
                   <strong>{resource.title}</strong>
@@ -395,6 +407,15 @@ import {
     color: inherit;
     text-decoration: none;
     transition: background-color 0.15s ease;
+  }
+
+  .resource-item-thumb {
+    width: 3rem;
+    height: 3rem;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
   }
 
   .resource-item-link:hover,

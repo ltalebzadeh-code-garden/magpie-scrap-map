@@ -190,6 +190,18 @@
             {#each $listViewResources as resource}
               <li class="resource-item">
                 <a class="resource-item__link" href={`/resource/${resource.id}`}>
+                  {#if resource.photo_url}
+                    <img
+                      class="resource-item__thumb"
+                      src={resource.photo_url}
+                      alt=""
+                      loading="lazy"
+                      onerror={(event) => {
+                        const img = event.currentTarget as HTMLImageElement | null;
+                        if (img) img.hidden = true;
+                      }}
+                    />
+                  {/if}
                   <div class="resource-item__header">
                     <strong>{resource.title}</strong>
                     <Badge status={resource.status} />
@@ -369,7 +381,9 @@
   }
 
   .resource-item__link {
-    display: block;
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
     padding: var(--space-2);
     color: inherit;
     text-decoration: none;
@@ -381,6 +395,28 @@
     background: var(--color-hover, #f7fafc);
     outline: 2px solid var(--color-primary, #2b6cb0);
     outline-offset: -2px;
+  }
+
+  .resource-item__thumb {
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 3rem;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .resource-item__link :global(.resource-item__header),
+  .resource-item__link :global(.resource-item__meta),
+  .resource-item__link :global(.resource-item__coords),
+  .resource-item__link :global(.resource-item__distance) {
+    min-width: 0;
+  }
+
+  .resource-item__content {
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .resource-item__header {

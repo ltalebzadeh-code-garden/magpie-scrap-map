@@ -2,9 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## Unreleased
 
 ### Added (2026-06-26)
+
+#### Photo support and display
+- Added optional photo upload to the add-resource flow with client-side image re-encoding, size limits, and non-blocking failure fallback to text-only posting.
+- Hardened server-side photo upload handling with generated storage keys, try/catch fallback, and best-effort orphan cleanup on create failure.
+- Threaded `photo_url` through recent/list read paths and added compact inline thumbnails to home and list cards while leaving the detail view unchanged.
 
 #### Resource detail polish and community status reporting
 

@@ -37,6 +37,7 @@ export interface ResourceSummary {
   status: ResourceStatus;
   latitude: number;
   longitude: number;
+  photo_url?: string;
   created_at: string;
   distance?: number;
 }

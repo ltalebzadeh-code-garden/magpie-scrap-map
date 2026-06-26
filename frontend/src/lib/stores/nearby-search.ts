@@ -83,6 +83,7 @@ export function createNearbySearchController(initialResources: PrimaryResource[]
       status: resource.status,
       latitude: resource.latitude,
       longitude: resource.longitude,
+      photo_url: resource.photo_url,
       created_at: resource.created_at,
       distance:
         'distance_meters' in resource

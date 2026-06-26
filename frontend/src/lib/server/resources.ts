@@ -90,6 +90,7 @@ type DbResourceSummaryRow = {
   status: ResourceStatus;
   latitude: number;
   longitude: number;
+  photo_url: string | null;
   created_at: string;
 };
 
@@ -159,7 +160,7 @@ export async function fetchRecentResources(limit = 20): Promise<ServiceResult<Re
 
   const { data, error } = await supabase
     .from('resources')
-    .select('id,title,category,status,latitude,longitude,created_at')
+    .select('id,title,category,status,latitude,longitude,photo_url,created_at')
     .order('created_at', { ascending: false })
     .limit(safeLimit)
     .returns<DbResourceSummaryRow[]>();
@@ -183,6 +184,7 @@ export async function fetchRecentResources(limit = 20): Promise<ServiceResult<Re
       status: row.status,
       latitude: row.latitude,
       longitude: row.longitude,
+      photo_url: row.photo_url ?? undefined,
       created_at: row.created_at
     }))
   };
