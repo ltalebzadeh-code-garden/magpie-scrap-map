@@ -210,26 +210,28 @@ import {
       <ul class="resource-list">
         {#each $listViewResources as resource}
           <li class="resource-item">
-            <div class="item-header">
-              <div>
-                <strong>{resource.title}</strong>
-                <p class="item-meta">
-                  <Badge category={resource.category} size="small" />
-                  <span>{categoryLabels[resource.category as keyof typeof categoryLabels]}</span>
-                </p>
+            <a class="resource-item-link" href={`/resource/${resource.id}`}>
+              <div class="item-header">
+                <div>
+                  <strong>{resource.title}</strong>
+                  <p class="item-meta">
+                    <Badge category={resource.category} size="small" />
+                    <span>{categoryLabels[resource.category as keyof typeof categoryLabels]}</span>
+                  </p>
+                </div>
+                <Badge status={resource.status} />
               </div>
-              <Badge status={resource.status} />
-            </div>
 
-            <div class="item-details">
-              <span class="item-age">{formatRelativeTime(resource.created_at)}</span>
-              <span>•</span>
-              <span>{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</span>
-            </div>
+              <div class="item-details">
+                <span class="item-age">{formatRelativeTime(resource.created_at)}</span>
+                <span>•</span>
+                <span>{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</span>
+              </div>
 
-            {#if formatDistance(resource.distance)}
-              <p class="item-distance">{formatDistance(resource.distance)}</p>
-            {/if}
+              {#if formatDistance(resource.distance)}
+                <p class="item-distance">{formatDistance(resource.distance)}</p>
+              {/if}
+            </a>
           </li>
         {/each}
       </ul>
@@ -382,11 +384,24 @@ import {
   .resource-item {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: var(--space-3);
     background: var(--color-surface);
+  }
+
+  .resource-item-link {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    padding: var(--space-3);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+  }
+
+  .resource-item-link:hover,
+  .resource-item-link:focus {
+    background: var(--color-hover, #f7fafc);
+    outline: 2px solid var(--color-primary, #2b6cb0);
+    outline-offset: -2px;
   }
 
   .item-header {

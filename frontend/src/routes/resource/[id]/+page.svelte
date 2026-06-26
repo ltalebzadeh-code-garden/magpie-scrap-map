@@ -11,10 +11,42 @@
 
   const resource = data.resource;
   const mapsHref = `https://www.google.com/maps?q=${resource.latitude},${resource.longitude}`;
+
+  let copyFeedback = $state('');
+
+  function copyLink() {
+    if (typeof window === 'undefined' || !navigator.clipboard) {
+      copyFeedback = 'Copy not supported';
+      return;
+    }
+
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        copyFeedback = 'Link copied!';
+        setTimeout(() => {
+          copyFeedback = '';
+        }, 2000);
+      })
+      .catch(() => {
+        copyFeedback = 'Copy failed';
+        setTimeout(() => {
+          copyFeedback = '';
+        }, 2000);
+      });
+  }
+
+  const isStale = resource.status === 'expired' || (resource.expires_at && new Date(resource.expires_at) < new Date());
 </script>
 
 <div class="detail-page">
   <Card padding="large" class="detail-card">
+    {#if isStale}
+      <div class="stale-warning">
+        ⚠️ This resource may no longer be available.
+      </div>
+    {/if}
+
     <div class="header-row">
       <div>
         <h1>{resource.title}</h1>
@@ -60,6 +92,9 @@
 
     <div class="actions">
       <Button type="button" variant="ghost" on:click={() => history.back()}>Back</Button>
+      <Button type="button" on:click={copyLink}>
+        {copyFeedback || 'Copy link'}
+      </Button>
     </div>
   </Card>
 </div>
@@ -138,5 +173,17 @@
 
   .actions {
     margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stale-warning {
+    padding: 0.75rem 1rem;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 0.5rem;
+    color: #78350f;
+    font-size: 0.9rem;
   }
 </style>

@@ -189,20 +189,22 @@
           <ul class="resource-list">
             {#each $listViewResources as resource}
               <li class="resource-item">
-                <div class="resource-item__header">
-                  <strong>{resource.title}</strong>
-                  <Badge status={resource.status} />
-                </div>
-                <div class="resource-item__meta">
-                  <Badge category={resource.category} size="small" />
-                  <span>{categoryLabels[resource.category as keyof typeof categoryLabels]}</span>
-                  <span>•</span>
-                  <span>{new Date(resource.created_at).toLocaleString()}</span>
-                </div>
-                <p class="resource-item__coords">{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</p>
-                {#if formatDistance(resource.distance)}
-                  <p class="resource-item__distance">{formatDistance(resource.distance)}</p>
-                {/if}
+                <a class="resource-item__link" href={`/resource/${resource.id}`}>
+                  <div class="resource-item__header">
+                    <strong>{resource.title}</strong>
+                    <Badge status={resource.status} />
+                  </div>
+                  <div class="resource-item__meta">
+                    <Badge category={resource.category} size="small" />
+                    <span>{categoryLabels[resource.category as keyof typeof categoryLabels]}</span>
+                    <span>•</span>
+                    <span>{new Date(resource.created_at).toLocaleString()}</span>
+                  </div>
+                  <p class="resource-item__coords">{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</p>
+                  {#if formatDistance(resource.distance)}
+                    <p class="resource-item__distance">{formatDistance(resource.distance)}</p>
+                  {/if}
+                </a>
               </li>
             {/each}
           </ul>
@@ -363,8 +365,22 @@
   .resource-item {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: var(--space-2);
     background: white;
+  }
+
+  .resource-item__link {
+    display: block;
+    padding: var(--space-2);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+  }
+
+  .resource-item__link:hover,
+  .resource-item__link:focus {
+    background: var(--color-hover, #f7fafc);
+    outline: 2px solid var(--color-primary, #2b6cb0);
+    outline-offset: -2px;
   }
 
   .resource-item__header {
