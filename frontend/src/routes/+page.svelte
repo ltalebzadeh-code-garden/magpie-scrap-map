@@ -269,6 +269,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    overflow-y: auto;
+    padding-bottom: 5rem;
   }
 
   .controls-card,
@@ -382,8 +384,8 @@
 
   .resource-item__link {
     display: flex;
+    flex-direction: column;
     gap: var(--space-2);
-    align-items: flex-start;
     padding: var(--space-2);
     color: inherit;
     text-decoration: none;
@@ -421,9 +423,16 @@
 
   .resource-item__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .resource-item__header strong {
+    min-width: 0;
+    flex: 1 1 auto;
+    word-break: break-word;
   }
 
   .resource-item__meta {
@@ -433,6 +442,7 @@
     color: var(--color-muted);
     font-size: 0.85rem;
     flex-wrap: wrap;
+    min-width: 0;
   }
 
   .resource-item__coords {

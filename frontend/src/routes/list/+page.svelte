@@ -256,6 +256,7 @@ import {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    padding-bottom: 5rem;
   }
 
   .page-header {
