@@ -21,6 +21,7 @@
   type AddPageForm = {
     success?: boolean;
     message?: string;
+    warning?: string;
     created?: {
       id: string;
       title: string;
@@ -64,6 +65,7 @@
   let photoName = $state('');
   let photoNotice = $state('');
   let photoInput: HTMLInputElement | null = null;
+  let processedPhotoFile: File | null = null;
 
   const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
   const MAX_PHOTO_DIMENSION = 1600;
@@ -249,6 +251,8 @@
   }
 
   function setPhotoInputFile(file: File | null) {
+    processedPhotoFile = file;
+
     if (!photoInput) return;
 
     const dataTransfer = new DataTransfer();
@@ -353,6 +357,10 @@
   }
 
   const submitWithOfflineQueue: SubmitFunction = ({ formData, cancel }) => {
+    if (processedPhotoFile) {
+      formData.set('photo', processedPhotoFile);
+    }
+
     if (!get(isOnline)) {
       cancel();
       void queuePendingCreate(formData, 'offline');
@@ -441,6 +449,9 @@
         <p>
           Resource <strong>{form.created.title}</strong> was created successfully.
         </p>
+        {#if form.warning}
+          <p class="warning-text">{form.warning}</p>
+        {/if}
       </div>
     {:else if queueMessage}
       <div class="submit-result success-message">

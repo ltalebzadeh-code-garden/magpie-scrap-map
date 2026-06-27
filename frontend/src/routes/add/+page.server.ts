@@ -14,6 +14,7 @@ import type {
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const RESOURCE_PHOTOS_BUCKET = 'resource-photos';
+const PHOTO_UPLOAD_WARNING = 'Photo could not be uploaded. Resource was created without the photo.';
 
 type PhotoUploadResult =
   | { ok: true; photoUrl: string; photoPath: string }
@@ -36,12 +37,18 @@ function getPhotoExtension(file: File): string {
 
 async function uploadPhotoIfPresent(file: File): Promise<PhotoUploadResult> {
   try {
+    console.log('Uploading photo:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    });
+
     const supabase = getSupabaseClient();
     const ext = getPhotoExtension(file);
     const path = `public/${crypto.randomUUID()}.${ext}`;
     const fileBuffer = await file.arrayBuffer();
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError, data: uploadData } = await supabase.storage
       .from(RESOURCE_PHOTOS_BUCKET)
       .upload(path, fileBuffer, {
         contentType: file.type,
@@ -49,16 +56,31 @@ async function uploadPhotoIfPresent(file: File): Promise<PhotoUploadResult> {
         cacheControl: '3600'
       });
 
+    console.log('Upload result:', { uploadData, uploadError, path });
+
     if (uploadError) {
+      console.warn('Photo upload failed; continuing without a photo.', {
+        bucket: RESOURCE_PHOTOS_BUCKET,
+        path,
+        message: uploadError.message
+      });
+
       return {
         ok: false,
-        message: 'Photo upload failed.'
+        message: `Photo upload failed: ${uploadError.message}`
       };
     }
 
     const { data } = supabase.storage.from(RESOURCE_PHOTOS_BUCKET).getPublicUrl(path);
 
+    console.log('Public URL result:', data);
+
     if (!data.publicUrl) {
+      console.warn('Photo uploaded but public URL could not be generated; continuing without a photo.', {
+        bucket: RESOURCE_PHOTOS_BUCKET,
+        path
+      });
+
       return {
         ok: false,
         message: 'Photo uploaded but URL could not be generated. Please try again.'
@@ -70,13 +92,15 @@ async function uploadPhotoIfPresent(file: File): Promise<PhotoUploadResult> {
       photoUrl: data.publicUrl,
       photoPath: path
     };
-  } catch {
+  } catch (error) {
+    console.error('Photo upload exception:', error);
     return {
       ok: false,
       message: 'Photo upload failed.'
     };
   }
 }
+
 
 async function removeUploadedPhotoBestEffort(path: string): Promise<void> {
   try {
@@ -93,6 +117,7 @@ export const actions: Actions = {
     const photoFile = photoEntry instanceof File && photoEntry.size > 0 ? photoEntry : null;
     let uploadPhotoUrl: string | undefined;
     let uploadPhotoPath: string | undefined;
+    let uploadWarning: string | undefined;
 
     const values = readAddResourceFormValues(formData);
 
@@ -144,6 +169,10 @@ export const actions: Actions = {
         uploadPhotoUrl = uploadResult.photoUrl;
         uploadPhotoPath = uploadResult.photoPath;
       } else {
+        console.warn('Creating resource without uploaded photo.', {
+          reason: uploadResult.message
+        });
+        uploadWarning = PHOTO_UPLOAD_WARNING;
         values.photo_url = '';
       }
     }
@@ -172,6 +201,7 @@ export const actions: Actions = {
 
     return {
       success: true,
+      warning: uploadWarning,
       created: {
         id: result.data.id,
         title: result.data.title

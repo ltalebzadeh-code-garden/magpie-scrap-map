@@ -145,3 +145,30 @@ COMMENT ON TABLE resources IS 'User-posted resource pins for the Magpie MVP';
 COMMENT ON COLUMN resources.location IS 'PostGIS geography point computed from latitude/longitude for spatial queries';
 COMMENT ON COLUMN resources.device_id_hash IS 'SHA-256 hash of device identifier for lightweight ownership tracking';
 COMMENT ON COLUMN resources.expires_at IS 'Optional expiration timestamp for auto-stale resources';
+
+-- ============================================================
+-- Storage: Create bucket and policies for resource photos
+-- ============================================================
+
+-- Create the resource-photos storage bucket
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('resource-photos', 'resource-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow anonymous users to upload photos
+CREATE POLICY "Allow anonymous uploads to resource-photos"
+ON storage.objects FOR INSERT
+TO anon
+WITH CHECK (bucket_id = 'resource-photos');
+
+-- Allow anonymous users to read photos (public bucket)
+CREATE POLICY "Allow public reads from resource-photos"
+ON storage.objects FOR SELECT
+TO anon
+USING (bucket_id = 'resource-photos');
+
+-- Allow anonymous users to delete their own uploads (optional, for cleanup)
+CREATE POLICY "Allow anonymous deletes from resource-photos"
+ON storage.objects FOR DELETE
+TO anon
+USING (bucket_id = 'resource-photos');
