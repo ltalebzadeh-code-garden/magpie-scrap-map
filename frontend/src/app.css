@@ -21,7 +21,7 @@
 
   /* Typography */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    'Vazirmatn',-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --text-xs: 0.8125rem;
   --text-sm: 0.875rem;
   --text-md: 0.9375rem;
