@@ -12,7 +12,10 @@
   let pageError = $state('');
 
   function formatDate(iso: string): string {
-    return new Date(iso).toLocaleString();
+    return new Intl.DateTimeFormat('fa-IR', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(new Date(iso));
   }
 
   async function refreshPendingPosts() {
@@ -22,7 +25,7 @@
     try {
       pendingPosts = await listPendingPosts();
     } catch (error) {
-      pageError = error instanceof Error ? error.message : 'Failed to load queued posts.';
+      pageError = error instanceof Error ? error.message : 'بارگذاری ارسال‌های در صف با خطا مواجه شد.';
     } finally {
       isLoading = false;
     }
@@ -39,14 +42,14 @@
       const result = await retryPendingPostSync(id);
 
       if (result.synced > 0) {
-        pageMessage = 'Queued post synced successfully.';
+        pageMessage = 'ارسال در صف با موفقیت همگام شد.';
       } else if (result.leftPending > 0) {
-        pageMessage = 'Still offline. Queued post remains pending.';
+        pageMessage = 'هنوز آفلاین هستید. ارسال در صف باقی می‌ماند.';
       } else if (result.failed > 0) {
-        pageError = 'Retry failed. Please review the item error and try again.';
+        pageError = 'تلاش مجدد ناموفق بود. لطفا خطای مورد را بررسی کنید و دوباره امتحان کنید.';
       }
     } catch (error) {
-      pageError = error instanceof Error ? error.message : 'Retry failed.';
+      pageError = error instanceof Error ? error.message : 'تلاش مجدد ناموفق بود.';
     } finally {
       busyPostId = null;
       await refreshPendingPosts();
@@ -62,9 +65,9 @@
 
     try {
       await removePendingPost(id);
-      pageMessage = 'Queued post removed.';
+      pageMessage = 'ارسال در صف حذف شد.';
     } catch (error) {
-      pageError = error instanceof Error ? error.message : 'Could not remove queued post.';
+      pageError = error instanceof Error ? error.message : 'امکان حذف ارسال در صف وجود نداشت.';
     } finally {
       busyPostId = null;
       await refreshPendingPosts();
@@ -78,13 +81,13 @@
 
 <div class="page">
   <div class="queue-card">
-    <h2>Offline Queue</h2>
-    <p class="subtext">Queued submissions are stored locally and synced when you are online.</p>
+    <h2>صف آفلاین</h2>
+    <p class="subtext">ارسال‌های در صف به‌صورت محلی ذخیره می‌شوند و هنگام آنلاین شدن همگام می‌شوند.</p>
 
     {#if $isOnline}
-      <p class="info-note">✓ Online - reconnect/app resume sync is active</p>
+      <p class="info-note">✓ آنلاین - همگام‌سازی پس از اتصال مجدد/بازگشت به برنامه فعال است</p>
     {:else}
-      <p class="offline-note">⚠️ Offline - new submissions stay queued locally</p>
+      <p class="offline-note">⚠️ آفلاین - ارسال‌های جدید به‌صورت محلی در صف می‌مانند</p>
     {/if}
 
     {#if pageMessage}
@@ -96,9 +99,9 @@
     {/if}
 
     {#if isLoading}
-      <p class="muted">Loading queued posts…</p>
+      <p class="muted">در حال بارگذاری ارسال‌های در صف…</p>
     {:else if pendingPosts.length === 0}
-      <p class="muted">No queued posts.</p>
+      <p class="muted">ارسال در صفی وجود ندارد.</p>
     {:else}
       <ul class="queue-list">
         {#each pendingPosts as post}
@@ -106,14 +109,14 @@
             <div class="item-main">
               <p class="title">{post.payload.title}</p>
               <p class="meta">
-                <span>Status: <strong>{post.syncStatus}</strong></span>
-                <span>Queued: {formatDate(post.createdAt)}</span>
+                <span>وضعیت: <strong>{post.syncStatus}</strong></span>
+                <span>در صف: {formatDate(post.createdAt)}</span>
               </p>
               {#if post.lastSyncError}
-                <p class="item-error">Last error: {post.lastSyncError}</p>
+                <p class="item-error">آخرین خطا: {post.lastSyncError}</p>
               {/if}
               {#if post.photo}
-                <p class="photo-note">Photo metadata queued ({post.photo.name}); upload on sync is currently limited.</p>
+                <p class="photo-note"> عکس در صف قرار گرفت ({post.photo.name})؛ بارگذاری هنگام همگام‌سازی فعلا محدود است.</p>
               {/if}
             </div>
             <div class="item-actions">
@@ -123,7 +126,7 @@
                 disabled={busyPostId !== null || post.syncStatus === 'syncing'}
                 onclick={() => retryPost(post.id)}
               >
-                Retry
+                تلاش مجدد
               </button>
               <button
                 type="button"
@@ -131,7 +134,7 @@
                 disabled={busyPostId !== null || post.syncStatus === 'syncing'}
                 onclick={() => removePost(post.id)}
               >
-                Remove
+                حذف
               </button>
             </div>
           </li>

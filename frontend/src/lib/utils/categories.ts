@@ -1,15 +1,15 @@
 import type { ResourceCategory } from '$lib/types';
 
 export const categoryLabels: Record<ResourceCategory, string> = {
-  scrap_metal: 'Scrap Metal',
-  wood: 'Wood / Lumber',
-  tools: 'Tools',
-  electrical: 'Electrical',
-  plumbing: 'Plumbing',
-  containers: 'Containers / Storage',
-  building_materials: 'Building Materials',
-  fuel: 'Fuel / Energy',
-  other: 'Other'
+  scrap_metal: 'فلز ضایعاتی',
+  wood: 'چوب / الوار',
+  tools: 'ابزار',
+  electrical: 'برقی',
+  plumbing: 'لوله‌کشی',
+  containers: 'ظرف / انبار',
+  building_materials: 'مصالح ساختمانی',
+  fuel: 'سوخت / انرژی',
+  other: 'سایر'
 };
 
 export const categoryList: ResourceCategory[] = [

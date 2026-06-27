@@ -2,10 +2,10 @@
   import { page } from '$app/stores';
   
   const navItems = [
-    { path: '/', label: 'Map' },
-    { path: '/list', label: 'List' },
-    { path: '/add', label: 'Add' },
-    { path: '/offline', label: 'Offline' }
+    { path: '/', label: 'نقشه' },
+    { path: '/list', label: 'فهرست' },
+    { path: '/add', label: 'افزودن' },
+    { path: '/offline', label: 'آفلاین' }
   ];
 </script>
 

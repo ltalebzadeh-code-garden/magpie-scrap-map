@@ -13,7 +13,7 @@
   <p>{message}</p>
 
   {#if onRetry}
-    <Button type="button" variant="ghost" size="small" on:click={onRetry}>Retry</Button>
+    <Button type="button" variant="ghost" size="small" on:click={onRetry}>تلاش مجدد</Button>
   {/if}
 </div>
 

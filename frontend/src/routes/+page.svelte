@@ -4,6 +4,7 @@
   import { Badge, Button, Card, Input } from '$lib/components/ui';
   import { ErrorState, LoadingState } from '$lib/components/states';
   import { categoryLabels, categoryList } from '$lib/utils';
+  import { formatDateTime } from '$lib/utils/time';
   import {
     createNearbySearchController,
     nearbyRadiusOptions,
@@ -47,11 +48,11 @@
     const lon = Number(formData.get('longitude'));
 
     if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
-      locationError.set('Latitude must be between -90 and 90.');
+      locationError.set('عرض جغرافیایی باید بین ۹۰- و ۹۰ باشد.');
       return;
     }
     if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
-      locationError.set('Longitude must be between -180 and 180.');
+      locationError.set('طول جغرافیایی باید بین ۱۸۰- و ۱۸۰ باشد.');
       return;
     }
 
@@ -65,7 +66,7 @@
   <div class="page-content">
     <div class="map-column">
       {#if !$isOnline}
-        <div class="offline-warning">⚠️ Map tiles may not load while offline</div>
+        <div class="offline-warning">⚠️ کاشی‌های نقشه ممکن است در حالت آفلاین بار نشوند</div>
       {/if}
       <ResourceMap resources={$resourcesForMap} />
     </div>
@@ -74,27 +75,27 @@
       <Card padding="medium" class="controls-card">
         <div class="panel-header">
           <div>
-            <h2>Nearby search</h2>
-            <p class="panel-subtitle">Search resources near your current or chosen location.</p>
+            <h2>جست‌وجوی نزدیک</h2>
+            <p class="panel-subtitle">منابع نزدیک به موقعیت فعلی یا انتخابی خود را جست‌وجو کنید.</p>
           </div>
           <Badge variant="info">{$badgeLabel}</Badge>
         </div>
 
         <div class="location-actions">
           <Button type="button" variant="ghost" on:click={requestLocation} disabled={$isLoadingNearby}>
-            📍 Use my location
+            📍 از موقعیت من استفاده کن
           </Button>
 
           <form class="location-form" onsubmit={selectLocationFromInput}>
             <label>
-              <span>Latitude</span>
+              <span>عرض جغرافیایی</span>
               <Input name="latitude" type="number" step="0.000001" value={$searchLatitude ?? ''} />
             </label>
             <label>
-              <span>Longitude</span>
+              <span>طول جغرافیایی</span>
               <Input name="longitude" type="number" step="0.000001" value={$searchLongitude ?? ''} />
             </label>
-            <Button type="submit" size="small">Use coordinates</Button>
+            <Button type="submit" size="small">استفاده از مختصات</Button>
           </form>
         </div>
 
@@ -104,7 +105,7 @@
 
         <div class="controls-grid">
           <label>
-            <span>Radius</span>
+            <span>شعاع</span>
             <select bind:value={$selectedRadius}>
               {#each nearbyRadiusOptions as option}
                 <option value={option.value}>{option.label}</option>
@@ -113,9 +114,9 @@
           </label>
 
           <label>
-            <span>Category</span>
+            <span>دسته‌بندی</span>
             <select bind:value={$selectedCategory}>
-              <option value="">All categories</option>
+              <option value="">همه دسته‌ها</option>
               {#each categoryList as category}
                 <option value={category}>{categoryLabels[category]}</option>
               {/each}
@@ -123,14 +124,18 @@
           </label>
 
           <label>
-            <span>Status</span>
+            <span>وضعیت</span>
             <select bind:value={$selectedStatus}>
-              <option value="">Any status</option>
+              <option value="">هر وضعیتی</option>
               {#each nearbyStatusOptions as option}
                 <option value={option}>
-                  {option === 'possibly_gone'
-                    ? 'Possibly Gone'
-                    : option.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                  {option === 'available'
+                    ? 'موجود'
+                    : option === 'claimed'
+                      ? 'برداشته‌شده'
+                      : option === 'possibly_gone'
+                        ? 'احتمالاً ناپدید شده'
+                        : 'منقضی'}
                 </option>
               {/each}
             </select>
@@ -143,7 +148,7 @@
             on:click={fetchNearby}
             disabled={$isLoadingNearby || $searchLatitude == null || $searchLongitude == null}
           >
-            {$isLoadingNearby ? 'Searching…' : 'Search nearby'}
+        {$isLoadingNearby ? 'در حال جست‌وجو…' : 'جست‌وجوی نزدیک'}
           </Button>
           {#if $nearbyResources}
             <Button
@@ -151,13 +156,13 @@
               variant="ghost"
               on:click={clearNearby}
             >
-              Clear nearby
+            پاک کردن جست‌وجوی نزدیک
             </Button>
           {/if}
         </div>
 
         {#if $isLoadingNearby}
-          <LoadingState message="Searching nearby resources…" />
+          <LoadingState message="در حال جست‌وجوی منابع نزدیک…" />
         {:else if $nearbyError}
           {#if $isUsingCachedData}
             <div class="cache-notice">
@@ -167,24 +172,24 @@
             <ErrorState message={$nearbyError} onRetry={fetchNearby} />
           {/if}
         {:else if $showEmptyNearby}
-          <p class="empty-message">No resources found within this radius. Try a larger radius or different filters.</p>
+            <p class="empty-message">منبعی در این شعاع پیدا نشد. شعاع بزرگ‌تر یا فیلترهای دیگر را امتحان کنید.</p>
         {/if}
       </Card>
 
       <Card padding="medium" class="list-card">
         <div class="list-header">
-          <h3>{$nearbyResources ? 'Nearby resources' : 'Recent resources'}</h3>
+          <h3>{$nearbyResources ? 'منابع نزدیک' : 'منابع اخیر'}</h3>
           <Badge variant="info">{$primaryCount}</Badge>
         </div>
 
         {#if !$hasAttemptedNearby}
-          <p class="list-hint">Showing recent resources. Set a location to search nearby instead.</p>
+          <p class="list-hint">منابع اخیر نمایش داده می‌شوند. برای جست‌وجوی نزدیک، موقعیت را تعیین کنید.</p>
         {:else if $isUsingCachedData}
-          <p class="cache-hint">📦 Showing cached results (up to 10 minutes old).</p>
+          <p class="cache-hint">📦 نمایش نتایج ذخیره‌شده (مربوط به حداکثر ۱۰ دقیقه قبل).</p>
         {/if}
 
         {#if $primaryCount === 0 && !$isLoadingNearby}
-          <p class="empty-message">No resources to display.</p>
+          <p class="empty-message">منبعی برای نمایش وجود ندارد.</p>
         {:else}
           <ul class="resource-list">
             {#each $listViewResources as resource}
@@ -210,7 +215,7 @@
                     <Badge category={resource.category} size="small" />
                     <span>{categoryLabels[resource.category as keyof typeof categoryLabels]}</span>
                     <span>•</span>
-                    <span>{new Date(resource.created_at).toLocaleString()}</span>
+                    <span>{formatDateTime(resource.created_at)}</span>
                   </div>
                   <p class="resource-item__coords">{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</p>
                   {#if formatDistance(resource.distance)}

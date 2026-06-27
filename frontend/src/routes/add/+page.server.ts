@@ -14,7 +14,7 @@ import type {
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const RESOURCE_PHOTOS_BUCKET = 'resource-photos';
-const PHOTO_UPLOAD_WARNING = 'Photo could not be uploaded. Resource was created without the photo.';
+const PHOTO_UPLOAD_WARNING = 'عکس بارگذاری نشد. منبع بدون عکس ثبت شد.';
 
 type PhotoUploadResult =
   | { ok: true; photoUrl: string; photoPath: string }
@@ -127,34 +127,34 @@ export const actions: Actions = {
     const fieldErrors: Record<string, string> = {};
 
     if (!['gps', 'map', 'manual'].includes(locationMethod)) {
-      fieldErrors.location = 'Please choose a valid location method.';
+      fieldErrors.location = 'لطفا یک روش معتبر برای موقعیت انتخاب کنید.';
     }
 
     if (locationMethod === 'manual' && !manualArea) {
-      fieldErrors.manual_area = 'Please enter an approximate area for manual location.';
+      fieldErrors.manual_area = 'برای موقعیت دستی، لطفا محدوده تقریبی را وارد کنید.';
     }
 
     if (
       !Number.isFinite(toNumber(values.latitude)) ||
       !Number.isFinite(toNumber(values.longitude))
     ) {
-      fieldErrors.location = 'Please set a valid location before submitting.';
+      fieldErrors.location = 'لطفا قبل از ثبت، یک موقعیت معتبر تنظیم کنید.';
     }
 
     if (photoFile) {
       if (!ALLOWED_PHOTO_TYPES.includes(photoFile.type)) {
-        fieldErrors.photo = 'Only JPG, PNG, or WebP images are supported.';
+        fieldErrors.photo = 'فقط تصویرهای JPG، PNG یا WebP پشتیبانی می‌شوند.';
       }
 
       if (photoFile.size > MAX_PHOTO_SIZE_BYTES) {
-        fieldErrors.photo = 'Photo must be 5MB or smaller.';
+        fieldErrors.photo = 'حجم عکس باید ۵ مگابایت یا کمتر باشد.';
       }
     }
 
     if (Object.keys(fieldErrors).length > 0) {
       return fail(400, {
         success: false,
-        message: 'Please fix the highlighted fields and try again.',
+        message: 'لطفا فیلدهای مشخص‌شده را اصلاح کنید و دوباره تلاش کنید.',
         fieldErrors,
         values
       });

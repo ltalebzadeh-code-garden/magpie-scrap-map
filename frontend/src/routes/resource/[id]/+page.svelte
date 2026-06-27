@@ -2,6 +2,7 @@
   import { enhance } from '$app/forms';
   import { Badge, Card, Button } from '$lib/components/ui';
   import { categoryLabels, formatRelativeTime } from '$lib/utils';
+  import { formatDateTime } from '$lib/utils/time';
   import type { Resource, ResourceStatus } from '$lib/types';
 
   type ResourceDetailData = {
@@ -31,13 +32,13 @@
   const statusActions: { status: ResourceStatus; label: string; confirmation: string }[] = [
     {
       status: 'claimed',
-      label: 'Mark as claimed',
-      confirmation: 'Report this resource as claimed?'
+      label: 'ثبت به‌عنوان برداشته‌شده',
+      confirmation: 'این منبع به‌عنوان برداشته‌شده ثبت شود؟'
     },
     {
       status: 'possibly_gone',
-      label: 'Report possibly gone',
-      confirmation: 'Report this resource as possibly gone?'
+      label: 'گزارش احتمال ناپدید شدن',
+      confirmation: 'این منبع به‌عنوان احتمالاً ناپدید شده گزارش شود؟'
     }
   ];
 
@@ -53,20 +54,20 @@
 
   function copyLink() {
     if (typeof window === 'undefined' || !navigator.clipboard) {
-      copyFeedback = 'Copy not supported';
+      copyFeedback = 'کپی پشتیبانی نمی‌شود';
       return;
     }
 
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => {
-        copyFeedback = 'Link copied!';
+        copyFeedback = 'لینک کپی شد!';
         setTimeout(() => {
           copyFeedback = '';
         }, 2000);
       })
       .catch(() => {
-        copyFeedback = 'Copy failed';
+        copyFeedback = 'کپی ناموفق بود';
         setTimeout(() => {
           copyFeedback = '';
         }, 2000);
@@ -102,14 +103,14 @@
   <Card padding="large" class="detail-card">
     {#if isStale}
       <div class="stale-warning">
-        ⚠️ This resource may no longer be available.
+        ⚠️ ممکن است این منبع دیگر در دسترس نباشد.
       </div>
     {/if}
 
     <div class="header-row">
       <div>
         <h1>{resource.title}</h1>
-        <p class="meta-line">Posted {formatRelativeTime(resource.created_at)}</p>
+        <p class="meta-line">{formatRelativeTime(resource.created_at)}</p>
       </div>
       <div class="badges">
         <Badge category={resource.category} />
@@ -119,46 +120,46 @@
 
     {#if resource.photo_url}
       <div class="photo-wrap">
-        <img src={resource.photo_url} alt={`Photo for ${resource.title}`} loading="lazy" />
+        <img src={resource.photo_url} alt={`عکس مربوط به ${resource.title}`} loading="lazy" />
       </div>
     {/if}
 
     <section class="section">
-      <h2>Description</h2>
+      <h2>توضیحات</h2>
       <p>{resource.description}</p>
     </section>
 
     <section class="section">
-      <h2>Location</h2>
+      <h2>موقعیت</h2>
       <p class="mono">{resource.latitude.toFixed(6)}, {resource.longitude.toFixed(6)}</p>
       <p class="subtle">
-        Accuracy: {resource.location_accuracy === 'area_only'
-          ? 'Approximate area'
+        دقت: {resource.location_accuracy === 'area_only'
+          ? 'ناحیه تقریبی'
           : resource.location_accuracy === 'approximate'
-            ? 'Approximate point'
-            : 'Exact point'}
+            ? 'نقطه تقریبی'
+            : 'نقطه دقیق'}
       </p>
-      <a class="maps-link" href={mapsHref} target="_blank" rel="noopener noreferrer">Open in maps</a>
+      <a class="maps-link" href={mapsHref} target="_blank" rel="noopener noreferrer">باز کردن در نقشه</a>
     </section>
 
     <section class="section">
-      <h2>Details</h2>
-      <p><strong>Category:</strong> {categoryLabels[resource.category as keyof typeof categoryLabels]}</p>
+      <h2>جزئیات</h2>
+      <p><strong>دسته‌بندی:</strong> {categoryLabels[resource.category as keyof typeof categoryLabels]}</p>
       {#if resource.contact_method}
-        <p><strong>Contact:</strong> {resource.contact_method}</p>
+        <p><strong>تماس:</strong> {resource.contact_method}</p>
       {/if}
     </section>
 
     <section class="section status-report">
-      <h2>Community status report</h2>
-      <p class="subtle">Help others by reporting if this resource has already been claimed or may be gone.</p>
+      <h2>گزارش وضعیت از طرف جامعه</h2>
+      <p class="subtle">اگر این منبع قبلا برداشته شده یا ممکن است دیگر موجود نباشد، با گزارش خود به دیگران کمک کنید.</p>
 
       <form method="POST" action="?/updateStatus" use:enhance={confirmStatusUpdate}>
         <input type="hidden" name="id" value={resource.id} />
         <div class="status-actions">
           {#each statusActions as action}
             <Button type="submit" name="status" value={action.status} variant="ghost" disabled={isStatusPending}>
-              {isStatusPending ? 'Saving…' : action.label}
+              {isStatusPending ? 'در حال ذخیره…' : action.label}
             </Button>
           {/each}
         </div>
@@ -170,9 +171,9 @@
     </section>
 
     <div class="actions">
-      <Button type="button" variant="ghost" on:click={() => history.back()}>Back</Button>
+      <Button type="button" variant="ghost" on:click={() => history.back()}>بازگشت</Button>
       <Button type="button" on:click={copyLink}>
-        {copyFeedback || 'Copy link'}
+        {copyFeedback || 'کپی لینک'}
       </Button>
     </div>
   </Card>

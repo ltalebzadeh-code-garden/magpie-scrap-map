@@ -131,7 +131,7 @@
       longitude = result.longitude.toFixed(6);
       locationAccuracy = 'exact';
       locationState = 'success';
-      locationMessage = 'Current GPS location captured.';
+      locationMessage = 'موقعیت GPS فعلی ثبت شد.';
 
       if (map && leaflet) {
         setMapPin(result.latitude, result.longitude);
@@ -184,7 +184,7 @@
     longitude = lng.toFixed(6);
     locationAccuracy = 'exact';
     locationState = 'success';
-    locationMessage = 'Map pin set.';
+      locationMessage = 'نشانگر نقشه تنظیم شد.';
   }
 
   async function ensureMapReady() {
@@ -228,13 +228,13 @@
 
     if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
       locationState = 'error';
-      locationMessage = 'Please enter a valid approximate center latitude/longitude.';
+      locationMessage = 'لطفا عرض و طول جغرافیایی معتبر برای مرکز تقریبی وارد کنید.';
       return;
     }
 
     locationAccuracy = 'area_only';
     locationState = 'success';
-    locationMessage = 'Approximate manual location saved.';
+      locationMessage = 'موقعیت تقریبی دستی ذخیره شد.';
   }
 
   onDestroy(() => {
@@ -352,8 +352,8 @@
     isRedirecting = false;
     queueMessage =
       reason === 'offline'
-        ? 'You are offline. This resource was saved locally and will sync when you are back online.'
-        : 'Network issue detected. This resource was saved locally and will sync when you are back online.';
+        ? 'شما آفلاین هستید. این منبع به‌صورت محلی ذخیره شد و پس از اتصال دوباره همگام‌سازی می‌شود.'
+        : 'مشکل شبکه شناسایی شد. این منبع به‌صورت محلی ذخیره شد و پس از اتصال دوباره همگام‌سازی می‌شود.';
   }
 
   const submitWithOfflineQueue: SubmitFunction = ({ formData, cancel }) => {
@@ -390,7 +390,7 @@
 
     if (!SUPPORTED_PHOTO_TYPES.has(file.type)) {
       photoName = '';
-      photoNotice = 'Please choose a JPG, PNG, or WebP image.';
+      photoNotice = 'لطفا یک تصویر JPG، PNG یا WebP انتخاب کنید.';
       input.value = '';
       setPhotoInputFile(null);
       return;
@@ -398,7 +398,7 @@
 
     if (file.size > MAX_PHOTO_SIZE_BYTES) {
       photoName = '';
-      photoNotice = 'Please choose an image that is 5MB or smaller.';
+      photoNotice = 'لطفا تصویری با حجم ۵ مگابایت یا کمتر انتخاب کنید.';
       input.value = '';
       setPhotoInputFile(null);
       return;
@@ -412,7 +412,7 @@
 
         if (compressedFile.size > MAX_PHOTO_SIZE_BYTES) {
           photoName = '';
-          photoNotice = 'That image is still too large after compression, so it will be skipped.';
+          photoNotice = 'این تصویر پس از فشرده‌سازی هنوز بزرگ است، بنابراین نادیده گرفته می‌شود.';
           input.value = '';
           setPhotoInputFile(null);
           return;
@@ -422,7 +422,7 @@
         setPhotoInputFile(compressedFile);
       } catch {
         photoName = '';
-        photoNotice = 'Photo processing failed, so the resource will be submitted without a photo.';
+        photoNotice = 'پردازش عکس ناموفق بود، بنابراین منبع بدون عکس ثبت می‌شود.';
         input.value = '';
         setPhotoInputFile(null);
       }
@@ -431,13 +431,13 @@
 </script>
 
 <div class="add-page">
-  <h1>Add Resource</h1>
+        <h1>افزودن منبع</h1>
 
   {#if !$isOnline}
     <Card padding="medium">
       <div class="offline-notice">
-        <Badge variant="warning">Offline</Badge>
-        <p>You're offline. Your resource will be saved locally and synced when you're back online.</p>
+        <Badge variant="warning">آفلاین</Badge>
+        <p>شما آفلاین هستید. منبع شما به‌صورت محلی ذخیره می‌شود و پس از اتصال دوباره همگام‌سازی خواهد شد.</p>
       </div>
     </Card>
   {/if}
@@ -445,9 +445,9 @@
   <Card padding="large">
     {#if form?.success && form?.created}
       <div class="submit-result success-message">
-        <Badge variant="success">Created</Badge>
+          <Badge variant="success">ایجاد شد</Badge>
         <p>
-          Resource <strong>{form.created.title}</strong> was created successfully.
+          منبع <strong>{form.created.title}</strong> با موفقیت ایجاد شد.
         </p>
         {#if form.warning}
           <p class="warning-text">{form.warning}</p>
@@ -455,12 +455,12 @@
       </div>
     {:else if queueMessage}
       <div class="submit-result success-message">
-        <Badge variant="info">Queued</Badge>
+        <Badge variant="info">در صف</Badge>
         <p>{queueMessage}</p>
       </div>
     {:else if form?.message}
       <div class="submit-result error-message">
-        <Badge variant="error">Error</Badge>
+        <Badge variant="error">خطا</Badge>
         <p>{form.message}</p>
       </div>
     {/if}
@@ -473,11 +473,11 @@
       use:enhance={submitWithOfflineQueue}
     >
       <div class="form-group">
-        <label for="title">Title <span class="required">*</span></label>
+        <label for="title">عنوان <span class="required">*</span></label>
         <Input
           id="title"
           name="title"
-          placeholder="e.g. Steel beams, 3m length"
+          placeholder="مثلا: تیرآهن، طول ۳ متر"
           required
           maxlength={100}
           bind:value={title}
@@ -488,37 +488,37 @@
       </div>
 
       <div class="form-group">
-        <label for="description">Description <span class="required">*</span></label>
+        <label for="description">توضیحات <span class="required">*</span></label>
         <Textarea
           id="description"
           name="description"
-          placeholder="Describe the resource, condition, quantity..."
+          placeholder="منبع، وضعیت و مقدار را توضیح دهید..."
           required
           rows={5}
           maxlength={1000}
           bind:value={description}
         />
-        <span class="helper-text">{description.length}/1000 characters</span>
+        <span class="helper-text">{description.length}/1000 نویسه</span>
         {#if fieldErrors.description}
           <span class="field-error">{fieldErrors.description}</span>
         {/if}
       </div>
 
       <div class="form-group">
-        <label for="category">Category <span class="required">*</span></label>
+        <label for="category">دسته‌بندی <span class="required">*</span></label>
         <select id="category" name="category" bind:value={category} class="select">
-          <option value="scrap_metal">Scrap Metal</option>
-          <option value="wood">Wood / Lumber</option>
-          <option value="tools">Tools</option>
-          <option value="electrical">Electrical</option>
-          <option value="plumbing">Plumbing</option>
-          <option value="containers">Containers / Storage</option>
-          <option value="building_materials">Building Materials</option>
-          <option value="fuel">Fuel / Energy</option>
-          <option value="other">Other</option>
+          <option value="scrap_metal">ضایعات فلزی</option>
+          <option value="wood">چوب / الوار</option>
+          <option value="tools">ابزار</option>
+          <option value="electrical">برقی</option>
+          <option value="plumbing">لوله‌کشی</option>
+          <option value="containers">ظروف / انبار</option>
+          <option value="building_materials">مصالح ساختمانی</option>
+          <option value="fuel">سوخت / انرژی</option>
+          <option value="other">سایر</option>
         </select>
         <div class="category-preview">
-          <span class="preview-label">Preview:</span>
+          <span class="preview-label">پیش‌نمایش:</span>
           <Badge {category} />
         </div>
         {#if fieldErrors.category}
@@ -527,12 +527,12 @@
       </div>
 
       <div class="form-group">
-        <label for="status">Status <span class="required">*</span></label>
+        <label for="status">وضعیت <span class="required">*</span></label>
         <select id="status" name="status" bind:value={status} class="select">
-          <option value="available">Available</option>
-          <option value="claimed">Claimed</option>
-          <option value="possibly_gone">Possibly Gone</option>
-          <option value="expired">Expired</option>
+          <option value="available">موجود</option>
+          <option value="claimed">برداشته‌شده</option>
+          <option value="possibly_gone">احتمالاً ناپدید شده</option>
+          <option value="expired">منقضی</option>
         </select>
         {#if fieldErrors.status}
           <span class="field-error">{fieldErrors.status}</span>
@@ -541,9 +541,9 @@
 
       <!-- Location Section -->
       <div class="form-section">
-        <h3 class="section-title">Location <span class="required">*</span></h3>
+        <h3 class="section-title">موقعیت <span class="required">*</span></h3>
         <p class="section-description">
-          Choose how to set the resource location. You can use your device GPS, drop a pin on a map, or enter an approximate area manually.
+          روش تعیین موقعیت منبع را انتخاب کنید. می‌توانید از GPS دستگاه، نشان‌گذاری روی نقشه یا وارد کردن دستی محدوده تقریبی استفاده کنید.
         </p>
 
         <input type="hidden" name="location_method" value={locationMethod} />
@@ -558,7 +558,7 @@
             onclick={() => resetLocationForMethod('gps')}
           >
             <span class="method-icon">📍</span>
-            <span class="method-label">Use GPS</span>
+            <span class="method-label">استفاده از GPS</span>
           </button>
           <button
             type="button"
@@ -567,7 +567,7 @@
             onclick={() => resetLocationForMethod('map')}
           >
             <span class="method-icon">🗺️</span>
-            <span class="method-label">Drop Pin</span>
+            <span class="method-label">افزودن نشانگر روی نقشه</span>
           </button>
           <button
             type="button"
@@ -576,14 +576,14 @@
             onclick={() => resetLocationForMethod('manual')}
           >
             <span class="method-icon">✏️</span>
-            <span class="method-label">Manual</span>
+            <span class="method-label">دستی</span>
           </button>
         </div>
 
         <div class="location-picker-panel">
           {#if locationMethod === 'gps'}
             <div class="location-mode-body">
-              <p class="mode-hint">Use your current device position.</p>
+              <p class="mode-hint">از موقعیت فعلی دستگاه استفاده کنید.</p>
               <Button
                 type="button"
                 variant="secondary"
@@ -591,25 +591,25 @@
                 on:click={requestGpsLocation}
                 disabled={locationState === 'loading'}
               >
-                {locationState === 'loading' ? 'Getting location…' : 'Use current location'}
+                {locationState === 'loading' ? 'در حال دریافت موقعیت…' : 'استفاده از موقعیت فعلی'}
               </Button>
             </div>
           {:else if locationMethod === 'map'}
             <div class="location-mode-body">
-              <p class="mode-hint">Tap on the map to drop a pin.</p>
+              <p class="mode-hint">برای ثبت نشانگر، روی نقشه بزنید.</p>
               <div class="map-picker" bind:this={mapContainer}></div>
             </div>
           {:else}
             <div class="location-mode-body">
-              <label for="manual_area">Approximate area <span class="required">*</span></label>
+              <label for="manual_area">محدوده تقریبی <span class="required">*</span></label>
               <Input
                 id="manual_area"
-                placeholder="e.g. Near East Gate, Industrial Block B"
+                placeholder="مثلا: نزدیک دروازه شرقی، بلوک صنعتی ب"
                 maxlength={200}
                 bind:value={manualArea}
               />
               <p class="mode-hint">
-                Manual mode stores an approximate area and approximate center coordinates.
+                حالت دستی، محدوده تقریبی و مختصات مرکز تقریبی را ذخیره می‌کند.
               </p>
               <div class="temp-location-inputs">
                 <Input
@@ -617,7 +617,7 @@
                   name="latitude"
                   type="number"
                   step="any"
-                  placeholder="Approximate latitude"
+                  placeholder="عرض جغرافیایی تقریبی"
                   bind:value={latitude}
                 />
                 <Input
@@ -625,12 +625,12 @@
                   name="longitude"
                   type="number"
                   step="any"
-                  placeholder="Approximate longitude"
+                  placeholder="طول جغرافیایی تقریبی"
                   bind:value={longitude}
                 />
               </div>
               <Button type="button" variant="ghost" size="small" on:click={applyManualApproximateCenter}>
-                Save approximate location
+                ذخیره موقعیت تقریبی
               </Button>
             </div>
           {/if}
@@ -642,15 +642,15 @@
         {/if}
 
         <div class="method-indicator">
-          <Badge variant="info">Method: {locationMethod === 'gps' ? 'GPS' : locationMethod === 'map' ? 'Map pin' : 'Manual area'}</Badge>
+          <Badge variant="info">روش: {locationMethod === 'gps' ? 'GPS' : locationMethod === 'map' ? 'نشانگر نقشه' : 'محدوده دستی'}</Badge>
           <Badge variant={hasValidLocation ? 'success' : 'warning'}>
-            {hasValidLocation ? 'Location ready' : 'Location required'}
+            {hasValidLocation ? 'موقعیت آماده است' : 'موقعیت لازم است'}
           </Badge>
         </div>
 
         {#if hasCoordinateLocation}
           <div class="location-preview">
-            <Badge variant="success">Location Set</Badge>
+            <Badge variant="success">موقعیت ثبت شد</Badge>
             <span class="location-coords">
               {Number(latitude).toFixed(4)}, {Number(longitude).toFixed(4)}
             </span>
@@ -680,14 +680,14 @@
 
       <!-- Photo Section -->
       <div class="form-section">
-        <h3 class="section-title">Photo (Optional)</h3>
+        <h3 class="section-title">عکس (اختیاری)</h3>
         <p class="section-description">
-          Add a photo to help others identify the resource. Photos are optional but recommended.
+          برای کمک به شناسایی منبع، یک عکس اضافه کنید. عکس اختیاری است اما پیشنهاد می‌شود.
         </p>
 
         <div class="photo-picker-placeholder">
           <div class="location-mode-body">
-            <label for="photo">Choose image (JPG, PNG, or WebP, up to 5MB)</label>
+            <label for="photo">انتخاب تصویر (JPG، PNG یا WebP، تا ۵ مگابایت)</label>
             <input
               id="photo"
               name="photo"
@@ -697,7 +697,7 @@
               onchange={handlePhotoChange}
             />
             <p class="helper-text">
-              {photoName ? `Selected: ${photoName}` : 'No file selected. You can submit without a photo.'}
+              {photoName ? `انتخاب‌شده: ${photoName}` : 'فایلی انتخاب نشده است. می‌توانید بدون عکس ثبت کنید.'}
             </p>
             {#if photoNotice}
               <span class="helper-text">{photoNotice}</span>
@@ -710,15 +710,15 @@
       </div>
 
       <div class="form-group">
-        <label for="contact_method">Contact Method (Optional)</label>
+        <label for="contact_method">روش تماس (اختیاری)</label>
         <Input
           id="contact_method"
           name="contact_method"
-          placeholder="e.g. Available at site, or contact at meeting point"
+          placeholder="مثلا: در محل موجود است یا برای هماهنگی تماس بگیرید"
           maxlength={200}
           bind:value={contactMethod}
         />
-        <span class="helper-text">How can people reach you?</span>
+        <span class="helper-text">دیگران چگونه می‌توانند با شما ارتباط بگیرند؟</span>
         {#if fieldErrors.contact_method}
           <span class="field-error">{fieldErrors.contact_method}</span>
         {/if}
@@ -733,22 +733,22 @@
           disabled={!canSubmit || isSubmitting || isRedirecting}
         >
           {#if isSubmitting}
-            Creating resource…
+            در حال ثبت منبع…
           {:else if isRedirecting}
-            Redirecting to details…
+            در حال انتقال به جزئیات…
           {:else}
-            Add Resource
+            افزودن منبع
           {/if}
         </Button>
         <Button type="button" variant="ghost" size="medium" fullWidth on:click={() => history.back()} disabled={isSubmitting || isRedirecting}>
-          Cancel
+          انصراف
         </Button>
       </div>
 
       {#if form?.success && form?.created?.id}
         <div class="submit-result success-message">
-          <p>Opening resource details…</p>
-          <a class="detail-link" href={`/resource/${form.created.id}`}>Go now</a>
+          <p>در حال باز کردن جزئیات منبع…</p>
+          <a class="detail-link" href={`/resource/${form.created.id}`}>رفتن به صفحه</a>
         </div>
       {/if}
     </form>

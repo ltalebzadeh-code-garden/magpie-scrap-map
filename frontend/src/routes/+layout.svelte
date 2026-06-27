@@ -68,6 +68,7 @@
     min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
     display: flex;
     flex-direction: column;
+    direction: rtl;
   }
 
   main {

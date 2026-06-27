@@ -5,7 +5,7 @@
 {#if !$isOnline}
   <div class="offline-banner" role="status" aria-live="polite">
     <span class="dot" aria-hidden="true">●</span>
-    <span class="message">Offline — changes will be saved locally</span>
+    <span class="message">آفلاین — تغییرات به‌صورت محلی ذخیره می‌شوند</span>
   </div>
 {/if}
 

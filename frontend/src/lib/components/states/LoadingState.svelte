@@ -3,7 +3,7 @@
     message?: string;
   };
 
-  let { message = 'Loading…' }: LoadingStateProps = $props();
+  let { message = 'در حال بارگذاری…' }: LoadingStateProps = $props();
 </script>
 
 <div class="loading-state" role="status" aria-live="polite">
