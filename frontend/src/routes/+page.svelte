@@ -75,7 +75,7 @@
       <Card padding="medium" class="controls-card">
         <div class="panel-header">
           <div>
-            <h2>جست‌وجوی نزدیک</h2>
+            <h2>جست‌وجوی منابع نزدیک</h2>
             <p class="panel-subtitle">منابع نزدیک به موقعیت فعلی یا انتخابی خود را جست‌وجو کنید.</p>
           </div>
           <Badge variant="info">{$badgeLabel}</Badge>

@@ -12,7 +12,7 @@
     resources?: ResourceSummary[];
   }
 
-  let { center = [51.505, -0.09], zoom = 13, resources = [] }: Props = $props();
+  let { center = [35.6997, 51.3380], zoom = 13, resources = [] }: Props = $props();
 
   let mapContainer: HTMLDivElement;
   let map: L.Map | null = null;
@@ -44,7 +44,7 @@
           <div style="margin: 2px 0; color: #718096;">${age}</div>
         </div>
         <div style="margin-top: 12px;">
-          <a href="/list" style="display: inline-block; padding: 6px 12px; background: #4299e1; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 500;">
+          <a href="/resource/${resource.id}" style="display: inline-block; padding: 6px 12px; background: #4299e1; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 500;">
             View Details
           </a>
         </div>

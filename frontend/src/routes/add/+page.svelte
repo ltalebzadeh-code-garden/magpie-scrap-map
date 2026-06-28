@@ -101,6 +101,21 @@
 
   $effect(() => {
     if (!form?.success || !form?.created?.id) {
+      if (form?.message && !form?.success) {
+        isSubmitting = false;
+        isRedirecting = false;
+        queueMessage = '';
+
+        if (typeof window !== 'undefined') {
+          requestAnimationFrame(() => {
+            document.querySelector('.submit-result.error-message')?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          });
+        }
+      }
+
       return;
     }
 
