@@ -63,6 +63,18 @@
 </script>
 
 <div class="page-container">
+  <div class="w-full border-b border-slate-200 bg-slate-50 px-4 py-2 text-right" dir="rtl">
+    <p class="text-xs leading-5 text-slate-700 sm:text-sm">
+      <span class="font-semibold text-slate-900">
+        مگ‌پای برای پیدا کردن و ثبت مواد و ابزار قابل‌استفاده‌ی نزدیک شما در زمان بازسازی و بحران
+        است.
+      </span>
+      <span class="block mt-1">
+        ابزار، چوب، فلز، قطعات و سایر وسایل مفید را پیدا کنید یا موردی را که دارید ثبت کنید.
+      </span>
+    </p>
+  </div>
+
   <div class="page-content">
     <div class="map-column">
       {#if !$isOnline}
@@ -82,7 +94,12 @@
         </div>
 
         <div class="location-actions">
-          <Button type="button" variant="ghost" on:click={requestLocation} disabled={$isLoadingNearby}>
+          <Button
+            type="button"
+            variant="ghost"
+            on:click={requestLocation}
+            disabled={$isLoadingNearby}
+          >
             📍 از موقعیت من استفاده کن
           </Button>
 
@@ -93,7 +110,12 @@
             </label>
             <label>
               <span>طول جغرافیایی</span>
-              <Input name="longitude" type="number" step="0.000001" value={$searchLongitude ?? ''} />
+              <Input
+                name="longitude"
+                type="number"
+                step="0.000001"
+                value={$searchLongitude ?? ''}
+              />
             </label>
             <Button type="submit" size="small">استفاده از مختصات</Button>
           </form>
@@ -148,15 +170,11 @@
             on:click={fetchNearby}
             disabled={$isLoadingNearby || $searchLatitude == null || $searchLongitude == null}
           >
-        {$isLoadingNearby ? 'در حال جست‌وجو…' : 'جست‌وجوی نزدیک'}
+            {$isLoadingNearby ? 'در حال جست‌وجو…' : 'جست‌وجوی نزدیک'}
           </Button>
           {#if $nearbyResources}
-            <Button
-              type="button"
-              variant="ghost"
-              on:click={clearNearby}
-            >
-            پاک کردن جست‌وجوی نزدیک
+            <Button type="button" variant="ghost" on:click={clearNearby}>
+              پاک کردن جست‌وجوی نزدیک
             </Button>
           {/if}
         </div>
@@ -172,7 +190,9 @@
             <ErrorState message={$nearbyError} onRetry={fetchNearby} />
           {/if}
         {:else if $showEmptyNearby}
-            <p class="empty-message">منبعی در این شعاع پیدا نشد. شعاع بزرگ‌تر یا فیلترهای دیگر را امتحان کنید.</p>
+          <p class="empty-message">
+            منبعی در این شعاع پیدا نشد. شعاع بزرگ‌تر یا فیلترهای دیگر را امتحان کنید.
+          </p>
         {/if}
       </Card>
 
@@ -183,7 +203,9 @@
         </div>
 
         {#if !$hasAttemptedNearby}
-          <p class="list-hint">منابع اخیر نمایش داده می‌شوند. برای جست‌وجوی نزدیک، موقعیت را تعیین کنید.</p>
+          <p class="list-hint">
+            منابع اخیر نمایش داده می‌شوند. برای جست‌وجوی نزدیک، موقعیت را تعیین کنید.
+          </p>
         {:else if $isUsingCachedData}
           <p class="cache-hint">📦 نمایش نتایج ذخیره‌شده (مربوط به حداکثر ۱۰ دقیقه قبل).</p>
         {/if}
@@ -217,7 +239,9 @@
                     <span>•</span>
                     <span>{formatDateTime(resource.created_at)}</span>
                   </div>
-                  <p class="resource-item__coords">{resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}</p>
+                  <p class="resource-item__coords">
+                    {resource.latitude.toFixed(5)}, {resource.longitude.toFixed(5)}
+                  </p>
                   {#if formatDistance(resource.distance)}
                     <p class="resource-item__distance">{formatDistance(resource.distance)}</p>
                   {/if}
@@ -234,7 +258,8 @@
 <style>
   .page-container {
     height: 100%;
-    margin: calc(var(--space-3) * -1) calc(var(--space-3) * -1) calc(var(--space-3) * -1 - 5rem) calc(var(--space-3) * -1);
+    margin: calc(var(--space-3) * -1) calc(var(--space-3) * -1) calc(var(--space-3) * -1 - 5rem)
+      calc(var(--space-3) * -1);
     border: 3px solid var(--color-border);
     border-radius: var(--radius-md);
     overflow: hidden;
