@@ -1,12 +1,8 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  
-  const navItems = [
-    { path: '/', label: 'نقشه' },
-    { path: '/list', label: 'فهرست' },
-    { path: '/add', label: 'افزودن' },
-    { path: '/offline', label: 'آفلاین' }
-  ];
+  import { tabItems } from '$lib/navigation/tabs';
+
+  const navItems = tabItems;
 </script>
 
 <nav>

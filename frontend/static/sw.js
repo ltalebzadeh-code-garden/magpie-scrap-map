@@ -1,10 +1,10 @@
-const SW_VERSION = 'v1';
+const SW_VERSION = 'v2';
 const APP_SHELL_CACHE = `app-shell-${SW_VERSION}`;
 const RUNTIME_CACHE = `runtime-v${SW_VERSION}`;
-const TTL_LONG_MS = 30 * 60 * 1000;  // 30 min — /, /list
+const TTL_LONG_MS = 30 * 60 * 1000;  // 30 min — /, /app, /list
 const TTL_SHORT_MS = 10 * 60 * 1000; // 10 min — /resource/[id]
 
-const APP_SHELL_URLS = ['/', '/offline', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/robots.txt'];
+const APP_SHELL_URLS = ['/', '/app', '/offline', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/robots.txt'];
 
 function getTtl(pathname) {
 	return pathname.startsWith('/resource/') ? TTL_SHORT_MS : TTL_LONG_MS;

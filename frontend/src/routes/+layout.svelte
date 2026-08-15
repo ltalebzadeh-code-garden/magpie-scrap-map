@@ -6,6 +6,9 @@
   import Nav from '$lib/components/Nav.svelte';
   import { isOnline } from '$lib/stores';
   import { runPendingPostsSync } from '$lib/offline/sync-runner';
+  import { page } from '$app/stores';
+
+  const isLanding = $derived($page.url.pathname === '/' || $page.url.pathname === '/landing');
 
   function triggerSyncIfOnline() {
     if (typeof navigator === 'undefined' || !navigator.onLine) {
@@ -53,14 +56,18 @@
   });
 </script>
 
-<div class="app">
-  <Header />
-  <OfflineBanner />
-  <main>
-    <slot />
-  </main>
-  <Nav />
-</div>
+{#if isLanding}
+  <slot />
+{:else}
+  <div class="app">
+    <Header />
+    <OfflineBanner />
+    <main>
+      <slot />
+    </main>
+    <Nav />
+  </div>
+{/if}
 
 <style>
   .app {

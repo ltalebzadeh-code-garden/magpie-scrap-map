@@ -1,7 +1,7 @@
 {
 	"name": "Magpie Scrap Map",
 	"short_name": "Magpie",
-	"start_url": "/",
+	"start_url": "/app",
 	"scope": "/",
 	"display": "standalone",
 	"background_color": "#f8fafc",
