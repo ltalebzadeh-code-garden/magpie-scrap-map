@@ -13,6 +13,7 @@
   } from '$lib/stores/nearby-search';
 
   let { data } = $props();
+  let legendOpen = $state(true);
 
   const {
     stores: {
@@ -63,13 +64,45 @@
 </script>
 
 <div class="page-container">
-
   <div class="page-content">
     <div class="map-column">
       {#if !$isOnline}
         <div class="offline-warning">⚠️ کاشی‌های نقشه ممکن است در حالت آفلاین بار نشوند</div>
       {/if}
       <ResourceMap resources={$resourcesForMap} />
+
+      {#if legendOpen}
+        <aside class="map-legend" aria-label="راهنمای نقشه">
+          <div class="map-legend__header">
+            <p class="map-legend__title">راهنمای نقشه</p>
+
+            <button
+              type="button"
+              class="map-legend__close"
+              aria-label="بستن راهنمای نقشه"
+              title="بستن راهنما"
+              onclick={() => (legendOpen = false)}
+            >
+              ×
+            </button>
+          </div>
+
+          <p class="map-legend__description">
+            این نقشه منابع قابل‌ واگذاری اطراف شما را نشان می‌دهد. برای دیدن جزئیات بیشتر، روی هر
+            پین کلیک کنید.
+          </p>
+        </aside>
+      {:else}
+        <button
+          type="button"
+          class="map-legend__open"
+          aria-label="نمایش راهنمای نقشه"
+          onclick={() => (legendOpen = true)}
+        >
+          راهنمای نقشه
+        </button>
+      {/if}
+      
     </div>
 
     <div class="nearby-panel">
@@ -530,6 +563,108 @@
     .page-container {
       margin: calc(var(--space-6) * -1);
       border-width: 2px;
+    }
+  }
+
+  .map-legend {
+    position: absolute;
+    z-index: 900;
+    right: auto;
+    left: var(--space-4);
+    bottom: var(--space-4);
+    width: min(18rem, calc(100% - 2rem));
+    padding: var(--space-3);
+    direction: rtl;
+
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(8px);
+  }
+
+  .map-legend__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .map-legend__title {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .map-legend__description {
+    margin: var(--space-2) 0 0;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    line-height: 1.7;
+  }
+
+  .map-legend__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .map-legend__close:hover,
+  .map-legend__close:focus {
+    background: var(--color-hover, #f1f5f9);
+    color: var(--color-text);
+    outline: none;
+  }
+
+  .map-legend__open {
+    position: absolute;
+    z-index: 900;
+    right: auto;
+    left: var(--space-4);
+    bottom: var(--space-4);
+    direction: rtl;
+
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  .map-legend__open:hover,
+  .map-legend__open:focus {
+    background: var(--color-hover, #f7fafc);
+    outline: 2px solid var(--color-primary, #2b6cb0);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .map-legend {
+      left: var(--space-2);
+      right: auto;
+      bottom: calc(var(--space-4) + 1.5rem);
+      width: min(17rem, calc(100% - 1rem));
+    }
+
+    .map-legend__open {
+      left: var(--space-2);
+      right: auto;
+      bottom: var(--space-4);
     }
   }
 </style>

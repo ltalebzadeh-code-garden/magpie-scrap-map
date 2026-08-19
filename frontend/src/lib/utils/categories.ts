@@ -6,7 +6,7 @@ export const categoryLabels: Record<ResourceCategory, string> = {
   tools: 'ابزار',
   electrical: 'برقی',
   plumbing: 'لوله‌کشی',
-  containers: 'ظرف / انبار',
+  containers: 'مخازن و محفظه‌ها',
   building_materials: 'مصالح ساختمانی',
   fuel: 'سوخت / انرژی',
   other: 'سایر'

@@ -527,7 +527,7 @@
           <option value="tools">ابزار</option>
           <option value="electrical">برقی</option>
           <option value="plumbing">لوله‌کشی</option>
-          <option value="containers">ظروف / انبار</option>
+          <option value="containers">مخازن و محفظه‌ها</option>
           <option value="building_materials">مصالح ساختمانی</option>
           <option value="fuel">سوخت / انرژی</option>
           <option value="other">سایر</option>
