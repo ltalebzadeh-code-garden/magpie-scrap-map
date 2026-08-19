@@ -79,7 +79,6 @@
             <h2>جست‌وجوی منابع نزدیک</h2>
             <p class="panel-subtitle">منابع نزدیک به موقعیت فعلی یا انتخابی خود را جست‌وجو کنید.</p>
           </div>
-          <Badge variant="info">{$badgeLabel}</Badge>
         </div>
 
         <div class="location-actions">
@@ -314,13 +313,15 @@
   .panel-subtitle {
     margin: 0;
     color: var(--color-muted);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    margin-top: var(--space-2);
   }
 
   .location-actions {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    margin-top: var(--space-2);
   }
 
   .location-form {
@@ -348,6 +349,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: var(--space-2);
+    margin-top: var(--space-2);
   }
 
   .controls-grid label {
@@ -371,6 +373,7 @@
     display: flex;
     gap: var(--space-2);
     flex-wrap: wrap;
+    margin-top: var(--space-2);
   }
 
   .list-header {

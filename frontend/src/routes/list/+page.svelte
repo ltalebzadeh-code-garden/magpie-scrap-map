@@ -72,7 +72,6 @@
       <h1>فهرست منابع نزدیک</h1>
       <p class="subtitle">منابع نزدیک را بدون نیاز به نقشه مرور کنید.</p>
     </div>
-    <Badge variant="info">{$badgeLabel}</Badge>
   </div>
 
   {#if data.fetchError}
@@ -290,15 +289,16 @@
   }
 
   .caption {
-    margin: 0;
     color: var(--color-muted);
     font-size: 0.9rem;
+    margin-top: var(--space-2);
   }
 
   .location-actions {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    margin-top: var(--space-2);
   }
 
   .location-form {
@@ -326,6 +326,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: var(--space-2);
+    margin-top: var(--space-2);
   }
 
   .filters-grid label {
@@ -347,6 +348,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
+    margin-top: var(--space-2);
   }
 
   .empty-state {
