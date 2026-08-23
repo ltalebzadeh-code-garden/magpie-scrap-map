@@ -1,4 +1,4 @@
-export type TabId = 'map' | 'list' | 'add' | 'offline';
+export type TabId = 'map' | 'list' | 'add' | 'guide';
 
 export const defaultTab: TabId = 'map';
 
@@ -6,14 +6,14 @@ export const tabRoutes: Record<TabId, string> = {
   map: '/app',
   list: '/list',
   add: '/add',
-  offline: '/offline'
+  guide: '/guide'
 };
 
 export const tabItems: { id: TabId; path: string; label: string }[] = [
   { id: 'map', path: tabRoutes.map, label: 'نقشه' },
   { id: 'list', path: tabRoutes.list, label: 'فهرست' },
   { id: 'add', path: tabRoutes.add, label: 'افزودن' },
-  { id: 'offline', path: tabRoutes.offline, label: 'آفلاین' }
+  { id: 'guide', path: tabRoutes.guide, label: 'راهنما' }
 ];
 
 export function isTabId(value: string | null | undefined): value is TabId {
